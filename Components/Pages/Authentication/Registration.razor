@@ -1,0 +1,118 @@
+﻿@page "/"
+@page "/register"
+@using BhawanaPatra.ViewModel
+@using MudBlazor
+
+@inject UserService userService
+@using System.ComponentModel.DataAnnotations
+
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Register</MudText>
+                    <MudTextField Label="First name" HelperText="Max. 8 characters"
+                                  @bind-Value="model.Username" For="@(() => model.Username)"
+                                  Variant="Variant.Outlined" />
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="model.Password" For="@(() => model.Password)"
+                                  InputType="InputType.Password"
+                                  Variant="Variant.Outlined" />
+                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                  @bind-Value="model.Password2" For="@(() => model.Password2)"
+                                  InputType="InputType.Password"
+                                  Variant="Variant.Outlined" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudPaper Class="pa-4 mud-height-full">
+                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                @if (success)
+                {
+                    <MudText Color="Color.Success">Success</MudText>
+                }
+                else
+                {
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary />
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                Fill out the form correctly to see the success message.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+=
+ @code {
+@code {
+    private RegisterModel model = new(); // This matches your @bind-Value usage!
+    private bool success;
+
+    [Inject] private UserService UserService { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    // This method is called when the form is submitted and passes validation.
+    private void OnValidSubmit()
+    {
+        if (!IsPasswordStrong(model.Password))
+        {
+            Snackbar.Add("❌ Password does not meet strength requirements.", Severity.Error);
+            success = false;
+            return;
+        }
+
+        if (!PasswordsMatch(model.Password, model.Password2))
+        {
+            Snackbar.Add("❌ Passwords do not match.", Severity.Error);
+            success = false;
+            return;
+        }
+
+        var registered = UserService.RegisterUser(model.Username, model.Password);
+        
+        if (registered)
+        {
+            Snackbar.Add("Registration successful", Severity.Success);
+            success = true;
+            Nav.NavigateTo("/login");
+        }
+        else
+        {
+            Snackbar.Add("❌ Username already exists.", Severity.Error);
+            success = false;
+        }
+    }
+
+    // Checks password strength: min length, upper, lower, digit
+    private bool IsPasswordStrong(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw)) return false;
+        if (pw.Length < 8) return false;
+        if (!System.Text.RegularExpressions.Regex.IsMatch(pw, @"[A-Z]")) return false;
+        if (!System.Text.RegularExpressions.Regex.IsMatch(pw, @"[a-z]")) return false;
+        if (!System.Text.RegularExpressions.Regex.IsMatch(pw, @"[0-9]")) return false;
+        return true;
+    }
+
+    // Checks passwords match
+    private bool PasswordsMatch(string pw1, string pw2)
+    {
+        return pw1 == pw2;
+    }
+}
+
+}
