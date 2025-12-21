@@ -38,13 +38,19 @@
                                    Style="background-color: #424242;"
                                    Class="register-button"
                                    FullWidth="true">
-                            Login
+                            Register
                         </MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
             <MudItem xs="12" sm="7">
-                
+                <span style="color: #888;">
+                   Already have an account?
+                    <a style="color: #222; font-weight: 600; cursor: pointer; text-decoration: underline;"
+                       @onclick="GoToLogin">
+                        Click here
+                    </a>
+                </span>
             </MudItem>
             <MudItem xs="12">
                 <MudText Typo="Typo.body2" Align="Align.Center">
@@ -114,5 +120,9 @@
     private bool PasswordsMatch(string pw1, string pw2)
     {
         return pw1 == pw2;
+    }
+    private void GoToLogin()
+    {
+        Nav.NavigateTo("/login");
     }
 }
