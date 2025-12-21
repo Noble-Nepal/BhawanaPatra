@@ -1,6 +1,88 @@
-﻿@page "/login"
-<h3>Login</h3>
+﻿@page "/"
+@page "/login"
+@using BhawanaPatra.ViewModel
+@using MudBlazor
+
+@inject UserService userService
+
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div style="min-height: 100vh;" class="d-flex flex-column align-center justify-center">
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" sm="7">
+                <MudCard>
+                    <MudCardContent>
+                        <div class="d-flex justify-center mb-3">
+                            <img src="notes.png" alt="Logo" style="width: 100px; height: 100px; object-fit: fill;" />
+                        </div>
+                        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Login</MudText>
+                        <MudTextField Label="Username"
+                                      @bind-Value="model.Username"
+                                      For="@(() => model.Username)"
+                                      Variant="Variant.Outlined"
+                                      Class="mb-2"
+                                      Required="true" />
+                        <MudTextField Label="Password"
+                                      @bind-Value="model.Password"
+                                      For="@(() => model.Password)"
+                                      InputType="InputType.Password"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      Class="mb-2" />
+                    </MudCardContent>
+                    <MudCardActions Class="px-4">
+                        <MudButton ButtonType="ButtonType.Submit"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Dark"
+                                   Style="background-color: #424242;"
+                                   Class="login-button"
+                                   FullWidth="true">
+                            Login
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="7">
+                
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2" Align="Align.Center">
+                    Copy Right Bhawana Patra 2026
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </div>
+</EditForm>
 
 @code {
+    private LoginModel model = new();
+    private bool success = false;
+    private bool showError = false;
+    private string errorMessage = string.Empty;
 
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private UserService UserService { get; set; } = default!;
+
+    private void OnValidSubmit()
+    {
+        var loggedIn = UserService.Login(model.Username, model.Password);
+
+        if (loggedIn)
+        {
+            Snackbar.Add("Login successful.", Severity.Success);
+            Nav.NavigateTo("/home");
+            success = true;
+            showError = false;
+            
+        }
+        else
+        {
+            Snackbar.Add("Invalid username or password.", Severity.Error);
+            showError = true;
+            errorMessage = "Invalid username or password.";
+            success = false;
+        }
+    }
 }
