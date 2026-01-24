@@ -10,10 +10,13 @@ namespace BhawanaPatra.Service
       public class AppThemeService
     {
         public bool IsDarkMode { get; private set; }
+        public event Action? OnThemeChanged;
 
         public void ToggleTheme()
         {
             IsDarkMode = !IsDarkMode;
+            OnThemeChanged?.Invoke();
+
         }
     }
     

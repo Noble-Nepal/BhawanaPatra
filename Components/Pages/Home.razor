@@ -1,10 +1,14 @@
 ﻿@page "/"
 @page "/home"
+@using BhawanaPatra.Service
 @using MudBlazor
 @using BhawanaPatra.Models
 @inject UserService UserService
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject NavigationManager Nav
+@inject AppThemeService ThemeService
+
+
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
 

@@ -29,7 +29,11 @@ namespace BhawanaPatra
 
             //Razor and MudBlazor
             builder.Services.AddMauiBlazorWebView();
-            IServiceCollection serviceCollection = builder.Services.AddMudServices();
+            
+
+           
+
+            
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();

@@ -61,12 +61,4 @@
     <Folder Include="Resources\Images\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <MauiImage Include="wwwroot\notes.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\notes.png" />
-  </ItemGroup>
-
 </Project>

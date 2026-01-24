@@ -1,6 +1,8 @@
-﻿@using MudBlazor
+﻿@using BhawanaPatra.Service
+@using MudBlazor
 @inject NavigationManager Nav
 @inject UserService Auth
+@inject AppThemeService ThemeService
 
 <MudPaper Elevation="1" Square="true" Class="pa-3">
     <MudStack Row="true"
@@ -18,7 +20,7 @@
             </MudAvatar>
 
             <MudText Typo="Typo.h5" Style="font-weight:800; letter-spacing:-0.03em;">
-                BhawanaPatra
+                bhawana  patra..
             </MudText>
         </MudStack>
 
@@ -29,25 +31,26 @@
                   Spacing="1">
 
             <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(() => Go("/home"))">
-                Home
+                home
             </MudButton>
 
             <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(() => Go("/calendar"))">
-                Calendar
+                calendar
             </MudButton>
 
             <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(() => Go("/entries"))">
-                Entries
+                entries
             </MudButton>
 
             <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(() => Go("/settings"))">
-                Settings
+                settings
             </MudButton>
 
             <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
 
-            <MudDivider Vertical="true" FlexItem="true" /> <MudIconButton Icon="@Icons.Material.Filled.LightMode" Color="Color.Dark" />
-
+            <MudIconButton Icon="@(ThemeService.IsDarkMode? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)"
+                           Color="Color.Inherit"
+                           OnClick="ToggleTheme" />
           
             <MudIconButton Icon="@Icons.Material.Filled.Logout"
                            Color="Color.Inherit"
@@ -61,18 +64,16 @@
 
 @code {
     
-    private bool _isDarkMode = false;
+    
 
     private void Go(string route)
     {
         Nav.NavigateTo(route);
     }
 
-    private void ToggleDarkMode()
+    private void ToggleTheme()
     {
-        _isDarkMode = !_isDarkMode;
-
-     
+        ThemeService.ToggleTheme();
     }
 
     private void Logout()

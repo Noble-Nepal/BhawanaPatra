@@ -1,4 +1,4 @@
-﻿@* @page "/" *@
+﻿
 @page "/register"
 @using BhawanaPatra.ViewModel
 @using MudBlazor
@@ -6,7 +6,7 @@
 @inject UserService userService
 @using System.ComponentModel.DataAnnotations
 
-@layout AuthLayout
+
 
 
 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
@@ -93,7 +93,7 @@
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
 
-    // This method is called when the form is submitted and passes validation.
+    
     private void OnValidSubmit()
     {
         if (!IsPasswordStrong(model.Password))
@@ -136,7 +136,7 @@
         return true;
     }
 
-    // Checks passwords match
+    
     private bool PasswordsMatch(string pw1, string pw2)
     {
         return pw1 == pw2;
