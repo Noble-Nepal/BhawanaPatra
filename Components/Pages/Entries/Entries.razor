@@ -10,16 +10,18 @@
     @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
     {
         <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
-            <MudText Typo="Typo.h6" Style="font-weight:800; color:#111;">
+            <MudText Typo="Typo.h6" Style="font-weight:800;">
                 Authentication required
             </MudText>
-            <MudText Typo="Typo.body2" Color="Color.Dark" Class="mt-2">
+
+            <MudText Typo="Typo.body2" Color="Color.Inherit" Class="mt-2">
                 Please login to view your entries.
             </MudText>
 
             <MudButton Variant="Variant.Filled"
-                       Style="background:#111; color:#fff; border-radius:12px;"
+                       Color="Color.Primary"
                        Class="mt-4"
+                       Style="border-radius:12px;"
                        OnClick="@(()=>Nav.NavigateTo("/login"))">
                 Go to login
             </MudButton>
@@ -27,20 +29,25 @@
     }
     else
     {
-       
-        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Justify="Justify.SpaceBetween"
+                  Class="mb-4"
+                  Wrap="Wrap.Wrap">
+
             <MudStack Spacing="0">
-                <MudText Typo="Typo.h3" Style="font-weight:900; color:#111;">
+                <MudText Typo="Typo.h3" Style="font-weight:900;">
                     All Entries
                 </MudText>
-                <MudText Typo="Typo.body2" Style="color:#555;">
+
+                <MudText Typo="Typo.body2" Color="Color.Inherit">
                     Your journal history (latest first)
                 </MudText>
             </MudStack>
 
             <MudButton Variant="Variant.Filled"
-                       Style=" color:#fff; border-radius:12px;"
-                       Color="Color.Dark"
+                       Color="Color.Primary"
+                       Style="border-radius:12px;"
                        OnClick="@(()=>Nav.NavigateTo("/entry"))">
                 Write Today
             </MudButton>
@@ -49,16 +56,18 @@
         @if (AllEntries.Count == 0)
         {
             <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
-                <MudText Typo="Typo.body1" Style="font-weight:700; color:#111;">
+                <MudText Typo="Typo.body1" Style="font-weight:800;">
                     No entries yet.
                 </MudText>
-                <MudText Typo="Typo.body2" Style="color:#555;" Class="mt-1">
+
+                <MudText Typo="Typo.body2" Color="Color.Inherit" Class="mt-1">
                     Start by writing your first entry.
                 </MudText>
 
                 <MudButton Variant="Variant.Filled"
-                           Style="background:#111; color:#fff; border-radius:12px;"
+                           Color="Color.Primary"
                            Class="mt-4"
+                           Style="border-radius:12px;"
                            OnClick="@(()=>Nav.NavigateTo("/entry"))">
                     Open Editor
                 </MudButton>
@@ -66,36 +75,38 @@
         }
         else
         {
-            
             <MudStack Spacing="2">
                 @foreach (var entry in AllEntries)
                 {
-                    <MudPaper Outlined="true" Class="pa-5"
-                              Style="border-radius:18px; background:#fafafa;">
+                    <MudPaper Outlined="true" Class="pa-5" Style="border-radius:18px;">
                         <MudStack Spacing="2">
 
-                            
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
-                                <MudText Typo="Typo.h6" Style="font-weight:900; color:#111;">
+                            <MudStack Row="true"
+                                      AlignItems="AlignItems.Center"
+                                      Justify="Justify.SpaceBetween"
+                                      Wrap="Wrap.Wrap">
+
+                                <MudText Typo="Typo.h6" Style="font-weight:900;">
                                     @FormatDate(entry.EntryDateKey)
                                 </MudText>
 
-                                <MudText Typo="Typo.body2" Style="color:#555;">
+                                <MudText Typo="Typo.body2" Color="Color.Inherit">
                                     @entry.WordCount words
                                 </MudText>
                             </MudStack>
 
-                           
-                            <MudText Typo="Typo.h6" Style="font-weight:800; color:#111;">
+                            <MudText Typo="Typo.h6" Style="font-weight:800;">
                                 @(string.IsNullOrWhiteSpace(entry.Title) ? "Untitled entry" : entry.Title)
                             </MudText>
 
                             <MudButton FullWidth="true"
                                        Variant="Variant.Filled"
-                                       Style="background:#111; color:#fff; border-radius:14px; padding:12px 0;"
+                                       Color="Color.Primary"
+                                       Style="border-radius:14px; padding:12px 0;"
                                        OnClick="@(()=>OpenEntry(entry))">
                                 OPEN
                             </MudButton>
+
                         </MudStack>
                     </MudPaper>
                 }
@@ -104,6 +115,7 @@
     }
 
 </MudContainer>
+
 
 @code {
     private List<EntryModel> AllEntries = new();

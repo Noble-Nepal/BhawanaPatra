@@ -2,68 +2,88 @@
 @page "/register"
 @using BhawanaPatra.ViewModel
 @using MudBlazor
-
+@using BhawanaPatra.Components.Layout
 @inject UserService userService
 @using System.ComponentModel.DataAnnotations
 
-@using System.ComponentModel.DataAnnotations
+@layout AuthLayout
+
 
 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
-    <div style="min-height: 100vh;" class="d-flex flex-column align-center justify-center">
-        <MudGrid Justify="Justify.Center">
-            <MudItem xs="12" sm="7">
-                <MudCard>
-                    <MudCardContent>
-                        <div class="d-flex justify-center mb-3">
-                            <img src="notes.png" alt="Logo" style="width: 100px; height: 100px; object-fit: fill;" />
-                        </div>
-                        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">bhawana patra</MudText>
-                        <MudTextField Label="First name" HelperText="Max. 8 characters"
-                                      @bind-Value="model.Username" For="@(() => model.Username)"
-                                      Variant="Variant.Outlined" />
-                        <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
-                                      @bind-Value="model.Password" For="@(() => model.Password)"
-                                      InputType="InputType.Password"
-                                      Variant="Variant.Outlined" />
-                        <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
-                                      @bind-Value="model.Password2" For="@(() => model.Password2)"
-                                      InputType="InputType.Password"
-                                      Variant="Variant.Outlined" />
-                    </MudCardContent>
-                    <MudCardActions Class="px-4">
-                        <MudButton ButtonType="ButtonType.Submit"
-                                   Variant="Variant. Filled"
-                                   Color="Color.Dark"
-                                   Style="background-color: #424242;"
-                                   Class="register-button"
-                                   FullWidth="true">
-                            Register
-                        </MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="7">
-                <span style="color: #888;">
-                   Already have an account?
-                    <a style="color: #222; font-weight: 600; cursor: pointer; text-decoration: underline;"
-                       @onclick="GoToLogin">
+
+    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column justify-center" Style="min-height:100vh;">
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+            <MudStack Spacing="3">
+
+                <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                    <MudAvatar Size="Size.Large" Square="true" Style="height:88px; width:88px;">
+                        <img src="notes.png" alt="Logo" style="height:100%; width:100%; object-fit:contain;" />
+                    </MudAvatar>
+
+                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:900;">
+                        bhawana patra
+                    </MudText>
+
+                    <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Inherit">
+                        Create your account to begin journaling
+                    </MudText>
+                </MudStack>
+
+                <MudTextField Label="First name"
+                              HelperText="Max. 8 characters"
+                              @bind-Value="model.Username"
+                              For="@(() => model.Username)"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudTextField Label="Password"
+                              HelperText="Choose a strong password"
+                              @bind-Value="model.Password"
+                              For="@(() => model.Password)"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudTextField Label="Confirm password"
+                              HelperText="Repeat the password"
+                              @bind-Value="model.Password2"
+                              For="@(() => model.Password2)"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Style="border-radius:12px; padding:12px 0;">
+                    Register
+                </MudButton>
+
+                <MudDivider />
+
+                <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudText Typo="Typo.body2" Color="Color.Inherit">
+                        Already have an account?
+                    </MudText>
+
+                    <MudLink Href="/login" Underline="Underline.Always">
                         Click here
-                    </a>
-                </span>
-            </MudItem>
-            <MudItem xs="12">
-                <MudText Typo="Typo.body2" Align="Align.Center">
+                    </MudLink>
+                </MudStack>
+
+                <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Inherit">
                     Copy Right Bhawana Patra 2026
                 </MudText>
-            </MudItem>
 
-        </MudGrid>
-    </div>
+            </MudStack>
+        </MudPaper>
+    </MudContainer>
 </EditForm>
 
 
-=
+
 
 @code {
     private RegisterModel model = new();
