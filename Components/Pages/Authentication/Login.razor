@@ -1,10 +1,12 @@
-﻿@page "/"
+﻿
 @page "/login"
+@using BhawanaPatra.Components.Layout
 @using BhawanaPatra.ViewModel
 @using MudBlazor
 
-@inject UserService userService
 
+@inject UserService userService
+@layout AuthLayout
 
 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
@@ -78,7 +80,7 @@
         if (loggedIn)
         {
             Snackbar.Add("Login successful.", Severity.Success);
-            Nav.NavigateTo("/home");
+            Nav.NavigateTo("/entry");
             success = true;
             showError = false;
             

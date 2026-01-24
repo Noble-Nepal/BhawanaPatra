@@ -1,0 +1,216 @@
+﻿@page "/"
+@page "/entry"
+@using MudBlazor
+@using BhawanaPatra.Models
+
+@inject UserService UserService
+@inject BhawanaPatra.Service.EntryService EntryService
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+    @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+    {
+        <MudPaper Outlined="true" Class="pa-5">
+            <MudText Typo="Typo.h6">Authentication required</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                Please login to write your journal.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Dark" Class="mt-4"
+                       OnClick="@(()=>Nav.NavigateTo("/login"))">
+                Go to login
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- Top strip like wireframe -->
+        <MudPaper Outlined="true" Class="pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap" Spacing="2">
+
+                <MudText Typo="Typo.subtitle1" Style="font-weight:700;">
+                    New Entry - @DateTime.Now.ToString("MMMM dd, yyyy")
+                </MudText>
+
+                <MudButton Variant="Variant.Outlined" Color="Color.Dark"
+                           OnClick="@(() => Nav.NavigateTo("/home"))">
+                    Back
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+
+        <MudPaper Outlined="true" Class="pa-5 mt-4">
+            <MudStack Spacing="3">
+
+                <!-- Title -->
+                <MudTextField Label="Title"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              @bind-Value="Title" />
+
+                <!-- Editor area -->
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight:700;">
+                        Content
+                    </MudText>
+
+                   
+
+                    <MudTextField Label="Write your entry"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Lines="14"
+                                  @bind-Value="Content" />
+                </MudStack>
+
+              
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Justify="Justify.FlexStart">
+
+                    @if (TodayEntry == null)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="CreateEntry">
+                            Save Entry
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="UpdateEntry">
+                            Update Entry
+                        </MudButton>
+                    }
+
+                    <MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="LoadTodayEntry">
+                        Reload
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="DeleteEntry"
+                               Disabled="@(TodayEntry == null)">
+                        Delete Entry
+                    </MudButton>
+                </MudStack>
+
+            </MudStack>
+        </MudPaper>
+
+        
+        <MudPaper Outlined="true" Class="pa-5 mt-4">
+            <MudText Typo="Typo.subtitle2" Style="font-weight:700;">Details</MudText>
+            <MudDivider Class="my-3" />
+
+            @if (TodayEntry == null)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    No entry saved yet for today.
+                </MudText>
+            }
+            else
+            {
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Created: @TodayEntry.CreatedAt.ToString("dd MMM yyyy, HH:mm")
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Updated: @TodayEntry.UpdatedAt.ToString("dd MMM yyyy, HH:mm")
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Word count: @TodayEntry.WordCount
+                    </MudText>
+                </MudStack>
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+
+@code {
+    private EntryModel? TodayEntry;
+    private string? Title;
+    private string Content = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (!UserService.IsLoggedIn)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        LoadTodayEntry();
+    }
+
+    private void LoadTodayEntry()
+    {
+        if (!UserService.CurrentUserId.HasValue) return;
+
+        TodayEntry = EntryService.GetTodayEntry(UserService.CurrentUserId.Value);
+
+        if (TodayEntry != null)
+        {
+            Title = TodayEntry.Title;
+            Content = TodayEntry.Content;
+        }
+        else
+        {
+            Title = null;
+            Content = string.Empty;
+        }
+    }
+
+    private void CreateEntry()
+    {
+        if (!UserService.CurrentUserId.HasValue) return;
+
+        if (string.IsNullOrWhiteSpace(Content))
+        {
+            Snackbar.Add("Content cannot be empty.", Severity.Error);
+            return;
+        }
+
+       
+        if (TodayEntry != null)
+        {
+            Snackbar.Add("Only one entry per day is allowed. Please update today’s entry.", Severity.Error);
+            return;
+        }
+
+        TodayEntry = EntryService.SaveTodayEntry(UserService.CurrentUserId.Value, Title, Content);
+        Snackbar.Add("Entry saved.", Severity.Success);
+    }
+
+    private void UpdateEntry()
+    {
+        if (!UserService.CurrentUserId.HasValue) return;
+
+        if (string.IsNullOrWhiteSpace(Content))
+        {
+            Snackbar.Add("Content cannot be empty.", Severity.Error);
+            return;
+        }
+
+        
+        TodayEntry = EntryService.SaveTodayEntry(UserService.CurrentUserId.Value, Title, Content);
+        Snackbar.Add("Entry updated.", Severity.Success);
+    }
+
+    private void DeleteEntry()
+    {
+        if (!UserService.CurrentUserId.HasValue) return;
+
+        if (TodayEntry == null)
+        {
+            Snackbar.Add("No entry to delete for today.", Severity.Info);
+            return;
+        }
+
+        EntryService.DeleteTodayEntry(UserService.CurrentUserId.Value);
+
+        TodayEntry = null;
+        Title = null;
+        Content = string.Empty;
+
+        Snackbar.Add("Entry deleted.", Severity.Warning);
+    }
+}
+
+}

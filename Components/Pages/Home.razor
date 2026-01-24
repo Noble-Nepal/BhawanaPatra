@@ -1,5 +1,261 @@
 ﻿@page "/home"
+@using MudBlazor
+@using BhawanaPatra.Models
+@inject UserService UserService
+@inject BhawanaPatra.Service.EntryService EntryService
+@inject NavigationManager Nav
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
+
+    @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+    {
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+            <MudText Typo="Typo.h6" Style="font-weight:800; color:#111;">
+                Authentication required
+            </MudText>
+
+            <MudText Typo="Typo.body2" Style="color:#555;" Class="mt-2">
+                Please login to access your dashboard.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Style="background:#111; color:#fff; border-radius:12px;"
+                       Class="mt-4"
+                       OnClick="@(()=>Nav.NavigateTo("/login"))">
+                Go to login
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- TOP CARD: Today's Entry -->
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px;">
+            <MudStack Spacing="2">
+
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h5" Style="font-weight:900; color:#111;">
+                            Today’s Entry
+                        </MudText>
+                        <MudText Typo="Typo.body2" Style="color:#555;">
+                            @DateTime.Now.ToString("dddd, MMMM dd, yyyy")
+                        </MudText>
+                    </MudStack>
+
+                    <MudButton Variant="Variant.Filled"
+                               Style="background:#111; color:#fff; border-radius:12px;"
+                               OnClick="@(()=>Nav.NavigateTo("/entry"))">
+                        Open Editor
+                    </MudButton>
+                </MudStack>
+
+                <MudDivider Class="my-2" />
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px; background:#f6f6f6;">
+                            <MudText Typo="Typo.caption" Style="color:#666;">Current Streak</MudText>
+                            <MudText Typo="Typo.h6" Style="font-weight:900; color:#111;">@CurrentStreak</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#666;">days</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px; background:#f6f6f6;">
+                            <MudText Typo="Typo.caption" Style="color:#666;">Longest Streak</MudText>
+                            <MudText Typo="Typo.h6" Style="font-weight:900; color:#111;">@LongestStreak</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#666;">days</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px; background:#f6f6f6;">
+                            <MudText Typo="Typo.caption" Style="color:#666;">Total Entries</MudText>
+                            <MudText Typo="Typo.h6" Style="font-weight:900; color:#111;">@TotalEntries</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#666;">entries</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px; background:#f6f6f6;">
+                            <MudText Typo="Typo.caption" Style="color:#666;">Words Today</MudText>
+                            <MudText Typo="Typo.h6" Style="font-weight:900; color:#111;">@WordsToday</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#666;">words</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudStack Row="true" Justify="Justify.Center" Class="mt-2">
+                            <MudButton Variant="Variant.Filled"
+                                       Size="Size.Large"
+                                       Style="background:#111; color:#fff; border-radius:14px; padding:12px 28px;"
+                                       OnClick="@(()=>Nav.NavigateTo("/entry"))">
+                                Write Today’s Entry
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+
+            </MudStack>
+        </MudPaper>
+
+        <!-- MIDDLE ROW -->
+        <MudGrid Spacing="3" Class="mt-4">
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:280px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:800; color:#111;">
+                        Mood Distribution
+                    </MudText>
+                    <MudDivider Class="my-3" />
+                    <MudText Typo="Typo.body2" Style="color:#555;">
+                        Mood analytics will appear here after Mood Tracking is implemented.
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:280px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:800; color:#111;">
+                        Writing Stats
+                    </MudText>
+                    <MudDivider Class="my-3" />
+
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.body2" Style="color:#555;">
+                            This Month: <span style="font-weight:800; color:#111;">@MonthEntries</span>/<span style="color:#111;">@DaysInMonth</span> days
+                        </MudText>
+
+                        <MudText Typo="Typo.body2" Style="color:#555;">
+                            Total words (recent): <span style="font-weight:800; color:#111;">@RecentWords</span>
+                        </MudText>
+
+                        <MudText Typo="Typo.body2" Style="color:#555;">
+                            Avg per entry (recent): <span style="font-weight:800; color:#111;">@AverageWords</span> words
+                        </MudText>
+
+                        <MudDivider Class="my-3" />
+
+                        <MudText Typo="Typo.body2" Style="color:#555;">
+                            Most productive day: <span style="font-weight:800; color:#111;">@MostProductiveDay</span>
+                        </MudText>
+
+                        <MudText Typo="Typo.body2" Style="color:#555;">
+                            Most used tag: <span style="font-weight:800; color:#111;">@MostUsedTag</span>
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- RECENT ENTRIES -->
+        <MudPaper Outlined="true" Class="pa-6 mt-4" Style="border-radius:18px;">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+                <MudText Typo="Typo.subtitle1" Style="font-weight:800; color:#111;">
+                    Recent Entries
+                </MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           Style="background:#111; color:#fff; border-radius:12px;"
+                           OnClick="@(()=>Nav.NavigateTo("/entries"))">
+                    View all
+                </MudButton>
+            </MudStack>
+
+            <MudDivider Class="my-3" />
+
+            @if (RecentEntries.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Style="color:#555;">
+                    No entries yet. Start by writing today’s entry.
+                </MudText>
+            }
+            else
+            {
+                <MudStack Spacing="2">
+                    @foreach (var entry in RecentEntries)
+                    {
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; background:#f6f6f6;">
+                            <MudStack Spacing="1">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight:800; color:#111;">
+                                        @FormatDate(entry.EntryDateKey)
+                                    </MudText>
+
+                                    <MudText Typo="Typo.body2" Style="color:#666;">
+                                        @entry.WordCount words
+                                    </MudText>
+                                </MudStack>
+
+                                @if (!string.IsNullOrWhiteSpace(entry.Title))
+                                {
+                                    <MudText Typo="Typo.body1" Style="font-weight:700; color:#111;">
+                                        @entry.Title
+                                    </MudText>
+                                }
+
+                                <MudButton Variant="Variant.Filled"
+                                           Style="background:#111; color:#fff; border-radius:12px;"
+                                           OnClick="@(()=>Nav.NavigateTo("/entry"))">
+                                    Open
+                                </MudButton>
+                            </MudStack>
+                        </MudPaper>
+                    }
+                </MudStack>
+            }
+        </MudPaper>
+    }
+
+</MudContainer>
 
 @code {
+    private int CurrentStreak;
+    private int LongestStreak;
+    private int TotalEntries;
+    private int WordsToday;
 
+    private int MonthEntries;
+    private int DaysInMonth;
+    private int RecentWords;
+    private int AverageWords;
+
+    private string MostProductiveDay = "—";
+    private string MostUsedTag = "—";
+
+    private List<EntryModel> RecentEntries = new();
+
+    protected override void OnInitialized()
+    {
+        if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+            return;
+
+        var userId = UserService.CurrentUserId.Value;
+
+        TotalEntries = EntryService.GetTotalEntries(userId);
+        WordsToday = EntryService.GetWordsToday(userId);
+        CurrentStreak = EntryService.GetCurrentStreak(userId);
+        LongestStreak = EntryService.GetLongestStreak(userId);
+
+        RecentEntries = EntryService.GetRecentEntries(userId, take: 5);
+
+        DaysInMonth = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month);
+
+        MonthEntries = RecentEntries.Count(e =>
+        {
+            if (!DateTime.TryParse(e.EntryDateKey, out var dt)) return false;
+            return dt.Year == DateTime.Now.Year && dt.Month == DateTime.Now.Month;
+        });
+
+        RecentWords = RecentEntries.Sum(e => e.WordCount);
+        AverageWords = RecentEntries.Count == 0 ? 0 : (int)Math.Round((double)RecentWords / RecentEntries.Count);
+
+        var best = RecentEntries.OrderByDescending(e => e.WordCount).FirstOrDefault();
+        if (best != null)
+            MostProductiveDay = FormatDate(best.EntryDateKey);
+
+        MostUsedTag = "—";
+    }
+
+    private static string FormatDate(string dateKey)
+        => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMM d, yyyy") : dateKey;
 }

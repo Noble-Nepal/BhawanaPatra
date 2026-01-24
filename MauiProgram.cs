@@ -23,7 +23,7 @@ namespace BhawanaPatra
 
             // Register UserService for DI
             builder.Services.AddScoped<UserService>();
-            
+            builder.Services.AddSingleton<EntryService>();
 
             //Razor and MudBlazor
             builder.Services.AddMauiBlazorWebView();

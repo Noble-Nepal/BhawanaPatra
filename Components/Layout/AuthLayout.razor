@@ -1,17 +1,14 @@
 ﻿@inherits LayoutComponentBase
+@using MudBlazor
 @using BhawanaPatra.Components.Shared
 
-@* Required *@
 <MudThemeProvider />
 <MudPopoverProvider />
-
-@* Needed for dialogs *@
 <MudDialogProvider />
-
-@* Needed for snackbars *@
 <MudSnackbarProvider />
 
-<!-- HEADER -->
-<Header />
-
-@Body
+<MudLayout>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>

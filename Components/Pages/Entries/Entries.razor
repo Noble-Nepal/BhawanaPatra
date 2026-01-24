@@ -1,0 +1,131 @@
+﻿@page "/entries"
+@using MudBlazor
+@using BhawanaPatra.Models
+@inject UserService UserService
+@inject BhawanaPatra.Service.EntryService EntryService
+@inject NavigationManager Nav
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
+
+    @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+    {
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+            <MudText Typo="Typo.h6" Style="font-weight:800; color:#111;">
+                Authentication required
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Dark" Class="mt-2">
+                Please login to view your entries.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Style="background:#111; color:#fff; border-radius:12px;"
+                       Class="mt-4"
+                       OnClick="@(()=>Nav.NavigateTo("/login"))">
+                Go to login
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+       
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h3" Style="font-weight:900; color:#111;">
+                    All Entries
+                </MudText>
+                <MudText Typo="Typo.body2" Style="color:#555;">
+                    Your journal history (latest first)
+                </MudText>
+            </MudStack>
+
+            <MudButton Variant="Variant.Filled"
+                       Style=" color:#fff; border-radius:12px;"
+                       Color="Color.Dark"
+                       OnClick="@(()=>Nav.NavigateTo("/entry"))">
+                Write Today
+            </MudButton>
+        </MudStack>
+
+        @if (AllEntries.Count == 0)
+        {
+            <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+                <MudText Typo="Typo.body1" Style="font-weight:700; color:#111;">
+                    No entries yet.
+                </MudText>
+                <MudText Typo="Typo.body2" Style="color:#555;" Class="mt-1">
+                    Start by writing your first entry.
+                </MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           Style="background:#111; color:#fff; border-radius:12px;"
+                           Class="mt-4"
+                           OnClick="@(()=>Nav.NavigateTo("/entry"))">
+                    Open Editor
+                </MudButton>
+            </MudPaper>
+        }
+        else
+        {
+            
+            <MudStack Spacing="2">
+                @foreach (var entry in AllEntries)
+                {
+                    <MudPaper Outlined="true" Class="pa-5"
+                              Style="border-radius:18px; background:#fafafa;">
+                        <MudStack Spacing="2">
+
+                            
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h6" Style="font-weight:900; color:#111;">
+                                    @FormatDate(entry.EntryDateKey)
+                                </MudText>
+
+                                <MudText Typo="Typo.body2" Style="color:#555;">
+                                    @entry.WordCount words
+                                </MudText>
+                            </MudStack>
+
+                           
+                            <MudText Typo="Typo.h6" Style="font-weight:800; color:#111;">
+                                @(string.IsNullOrWhiteSpace(entry.Title) ? "Untitled entry" : entry.Title)
+                            </MudText>
+
+                            <MudButton FullWidth="true"
+                                       Variant="Variant.Filled"
+                                       Style="background:#111; color:#fff; border-radius:14px; padding:12px 0;"
+                                       OnClick="@(()=>OpenEntry(entry))">
+                                OPEN
+                            </MudButton>
+                        </MudStack>
+                    </MudPaper>
+                }
+            </MudStack>
+        }
+    }
+
+</MudContainer>
+
+@code {
+    private List<EntryModel> AllEntries = new();
+
+    protected override void OnInitialized()
+    {
+        if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+            return;
+
+        var userId = UserService.CurrentUserId.Value;
+
+       
+        AllEntries = EntryService.GetAllEntries(userId);
+    }
+
+    private void OpenEntry(EntryModel entry)
+    {
+ 
+        Nav.NavigateTo("/entry");
+    }
+
+    private static string FormatDate(string dateKey)
+        => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMM dd, yyyy") : dateKey;
+}
+

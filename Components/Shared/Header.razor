@@ -1,0 +1,90 @@
+﻿@using MudBlazor
+@inject NavigationManager Nav
+@inject UserService Auth
+
+<MudPaper Elevation="1" Square="true" Class="pa-3">
+    <!-- Wrap is the key: it reflows on narrow desktop windows -->
+    <MudStack Row="true"
+              Wrap="Wrap.Wrap"
+              AlignItems="AlignItems.Center"
+              Justify="Justify.SpaceBetween"
+              Spacing="2">
+
+        <!-- Brand -->
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="min-width: 260px;">
+
+            <!-- Logo image (same as login/register) -->
+            <MudAvatar Size="Size.Medium" Square="true">
+                <img src="notes.png"
+                     alt="BhawanaPatra Logo"
+                     style="width: 100%; height: 100%; object-fit: contain;" />
+            </MudAvatar>
+
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h5" Style="font-weight:800; letter-spacing:-0.03em;">
+                    BhawanaPatra
+                </MudText>
+            </MudStack>
+
+        </MudStack>
+
+
+        <!-- Navigation: wraps to next line when window shrinks -->
+        <MudStack Row="true"
+                  Wrap="Wrap.Wrap"
+                  AlignItems="AlignItems.Center"
+                  Spacing="1">
+
+            <MudButton Variant="Variant.Text" Color="Color.Dark" OnClick="@(() => Go("/home"))">
+                Home
+            </MudButton>
+
+            <MudButton Variant="Variant.Text" Color="Color.Dark" OnClick="@(() => Go("/calendar"))">
+                Calendar
+            </MudButton>
+
+            <MudButton Variant="Variant.Text" Color="Color.Dark" OnClick="@(() => Go("/entries"))">
+                Entries
+            </MudButton>
+
+            <MudButton Variant="Variant.Text" Color="Color.Dark" OnClick="@(() => Go("/settings"))">
+                Settings
+            </MudButton>
+
+            <MudDivider Vertical="true" FlexItem="true" />
+
+            <MudIconButton Icon="@Icons.Material.Filled.LightMode" Color="Color.Dark" />
+
+            <MudIconButton Icon="@Icons.Material.Filled.Logout"
+                           Color="Color.Dark"
+                           OnClick="Logout" />
+        </MudStack>
+
+    </MudStack>
+</MudPaper>
+
+<MudDivider />
+
+@code {
+    
+    private bool _isDarkMode = false;
+
+    private void Go(string route)
+    {
+        Nav.NavigateTo(route);
+    }
+
+    private void ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+
+        // Later: call a ThemeService or save preference in DB
+        // For now: show feedback only
+    }
+
+    private void Logout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/login");
+    }
+}

@@ -2,6 +2,7 @@
 using BhawanaPatra.Models;
 using System.Security.Cryptography;
 using System.Text;
+using Windows.System;
 
 public class UserService
 {
@@ -9,7 +10,8 @@ public class UserService
     
     public bool IsLoggedIn { get; private set; } = false;
     public string? CurrentUser { get; private set; }
-
+    public int? CurrentUserId { get; private set; }
+   
     public UserService(DatabaseConfiguration db)
     {
         _db = db;
@@ -45,12 +47,14 @@ public class UserService
 
         IsLoggedIn = true;
         CurrentUser = username;
+        CurrentUserId = user.Id;
         return true;
     }
     public void Logout()
     {
         IsLoggedIn = false;
         CurrentUser = null;
+        CurrentUserId = null;
     }
 
 
