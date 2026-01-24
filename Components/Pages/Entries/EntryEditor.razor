@@ -1,12 +1,14 @@
-﻿
-@page "/entry"
+﻿@page "/entry"
 @using MudBlazor
 @using BhawanaPatra.Models
-
+@using BhawanaPatra.Service
+@inject QuilService quil
+@inject IJSRuntime js
 @inject UserService UserService
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
+
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
     @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
     {
@@ -30,7 +32,6 @@
     }
     else
     {
-    
         <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px;">
             <MudStack Row="true"
                       AlignItems="AlignItems.Center"
@@ -64,12 +65,9 @@
                     <MudText Typo="Typo.subtitle2" Style="font-weight:800;">
                         Content
                     </MudText>
-
-                    <MudTextField Label="Write your entry"
-                                  Variant="Variant.Outlined"
-                                  Margin="Margin.Dense"
-                                  Lines="14"
-                                  @bind-Value="Content" />
+                    <MudPaper Variant="Variant.Outlined">
+                        <div id="quill-editor" style="height:300px;"></div>
+                    </MudPaper>
                 </MudStack>
 
                 <!-- Actions -->
@@ -113,7 +111,6 @@
             </MudStack>
         </MudPaper>
 
-     
         <MudPaper Outlined="true" Class="pa-5 mt-4" Style="border-radius:16px;">
             <MudText Typo="Typo.subtitle2" Style="font-weight:800;">
                 Details
@@ -145,8 +142,6 @@
     }
 </MudContainer>
 
-
-
 @code {
     private EntryModel? TodayEntry;
     private string? Title;
@@ -163,7 +158,26 @@
         LoadTodayEntry();
     }
 
-    private void LoadTodayEntry()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await quil.InitializeAsync();
+                if (TodayEntry != null && !string.IsNullOrEmpty(Content))
+                {
+                    await quil.SetContentAsync(Content);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error initializing editor: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task LoadTodayEntry()
     {
         if (!UserService.CurrentUserId.HasValue) return;
 
@@ -173,51 +187,92 @@
         {
             Title = TodayEntry.Title;
             Content = TodayEntry.Content;
+            try
+            {
+                await quil.SetContentAsync(Content);
+            }
+            catch
+            {
+                // Quill might not be initialized yet, that's ok
+            }
         }
         else
         {
             Title = null;
             Content = string.Empty;
+
+            try
+            {
+                await quil.SetContentAsync(string.Empty);
+            }
+            catch
+            {
+                // Quill might not be initialized yet, that's ok
+            }
         }
+
+        StateHasChanged();
     }
 
-    private void CreateEntry()
+    private async Task CreateEntry()
     {
         if (!UserService.CurrentUserId.HasValue) return;
 
-        if (string.IsNullOrWhiteSpace(Content))
+        // Get content from Quill editor
+        try
+        {
+            Content = await quil.GetContentAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error reading editor content: {ex.Message}", Severity.Error);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Content) || Content == "<p><br></p>")
         {
             Snackbar.Add("Content cannot be empty.", Severity.Error);
             return;
         }
 
-       
         if (TodayEntry != null)
         {
-            Snackbar.Add("Only one entry per day is allowed. Please update today’s entry.", Severity.Error);
+            Snackbar.Add("Only one entry per day is allowed. Please update today's entry.", Severity.Error);
             return;
         }
 
         TodayEntry = EntryService.SaveTodayEntry(UserService.CurrentUserId.Value, Title, Content);
         Snackbar.Add("Entry saved.", Severity.Success);
+        StateHasChanged();
     }
 
-    private void UpdateEntry()
+    private async Task UpdateEntry()
     {
         if (!UserService.CurrentUserId.HasValue) return;
 
-        if (string.IsNullOrWhiteSpace(Content))
+        // Get content from Quill editor
+        try
+        {
+            Content = await quil.GetContentAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error reading editor content: {ex.Message}", Severity.Error);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Content) || Content == "<p><br></p>")
         {
             Snackbar.Add("Content cannot be empty.", Severity.Error);
             return;
         }
 
-        
         TodayEntry = EntryService.SaveTodayEntry(UserService.CurrentUserId.Value, Title, Content);
         Snackbar.Add("Entry updated.", Severity.Success);
+        StateHasChanged();
     }
 
-    private void DeleteEntry()
+    private async Task DeleteEntry()
     {
         if (!UserService.CurrentUserId.HasValue) return;
 
@@ -233,8 +288,9 @@
         Title = null;
         Content = string.Empty;
 
-        Snackbar.Add("Entry deleted.", Severity.Warning);
-    }
-}
+        await quil.SetContentAsync(string.Empty);
 
+        Snackbar.Add("Entry deleted.", Severity.Warning);
+        StateHasChanged();
+    }
 }

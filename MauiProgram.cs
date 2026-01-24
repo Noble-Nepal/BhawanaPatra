@@ -18,16 +18,16 @@ namespace BhawanaPatra
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
-            // SQLite Connection Setup
+            
             builder.Services.AddSingleton<DatabaseConfiguration>(s=>new DatabaseConfiguration(ConnectionService.DatabasePath));
 
-            // Register UserService for DI
+            
             builder.Services.AddScoped<UserService>();
             builder.Services.AddSingleton<EntryService>();
             builder.Services.AddSingleton<AppThemeService>();
+            builder.Services.AddScoped<QuilService>();
 
 
-            //Razor and MudBlazor
             builder.Services.AddMauiBlazorWebView();
             
 
