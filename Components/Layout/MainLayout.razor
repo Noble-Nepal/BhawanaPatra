@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using BhawanaPatra.Components.Shared
+@using BhawanaPatra.Service
+@inject AppThemeService ThemeService
+
 
 @* Required *@
 <MudThemeProvider />
@@ -15,3 +18,63 @@
 <Header />
 
 @Body
+
+@code {
+    private MudTheme CurrentTheme => ThemeService.IsDarkMode ? DarkTheme : LightTheme;
+
+    private static readonly MudTheme LightTheme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Background = "#ffffff",
+            Surface = "#ffffff",
+
+            AppbarBackground = "#ffffff",
+            AppbarText = "#111111",
+
+            TextPrimary = "#111111",
+            TextSecondary = "#555555",
+
+            Divider = "#e5e5e5",
+            LinesDefault = "#e5e5e5",
+            LinesInputs = "#d0d0d0",
+
+            Primary = "#111111",
+            PrimaryContrastText = "#ffffff",
+
+            Secondary = "#111111",
+            SecondaryContrastText = "#ffffff",
+
+            DrawerBackground = "#ffffff",
+            DrawerText = "#111111"
+        }
+    };
+
+    private static readonly MudTheme DarkTheme = new()
+    {
+        PaletteDark = new PaletteDark
+        {
+            Background = "#0f0f0f",
+            Surface = "#1b1b1b",
+
+            AppbarBackground = "#111111",
+            AppbarText = "#ffffff",
+
+            TextPrimary = "#ffffff",
+            TextSecondary = "#bdbdbd",
+
+            Divider = "#2a2a2a",
+            LinesDefault = "#2a2a2a",
+            LinesInputs = "#3a3a3a",
+
+            Primary = "#111111",
+            PrimaryContrastText = "#ffffff",
+
+            Secondary = "#111111",
+            SecondaryContrastText = "#ffffff",
+
+            DrawerBackground = "#111111",
+            DrawerText = "#ffffff"
+        }
+    };
+}

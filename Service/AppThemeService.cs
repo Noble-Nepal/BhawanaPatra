@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace BhawanaPatra.Service
 {
-    internal class ThemeService
+   
+      public class AppThemeService
     {
         public bool IsDarkMode { get; private set; }
-        public void ToggleTheme() => IsDarkMode = !IsDarkMode;
+
+        public void ToggleTheme()
+        {
+            IsDarkMode = !IsDarkMode;
+        }
     }
+    
 }
