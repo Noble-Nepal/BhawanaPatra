@@ -43,7 +43,7 @@
                 </MudText>
 
                 <MudText Typo="Typo.body2" Color="Color.Inherit">
-                    Your journal history (latest first)
+                    Your journal history (latest first) - @AllEntries.Count total
                 </MudText>
             </MudStack>
 
@@ -78,9 +78,9 @@
         else
         {
             <MudStack Spacing="2">
-                @foreach (var entry in AllEntries)
+                @foreach (var entry in PagedEntries)
                 {
-                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; cursor: pointer;" >
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; cursor: pointer;">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
                             <MudStack Spacing="1" Style="flex-grow: 1;">
@@ -113,6 +113,23 @@
                     </MudPaper>
                 }
             </MudStack>
+
+            @if (TotalPages > 1)
+            {
+                <MudPaper Outlined="true" Class="pa-4 mt-4" Style="border-radius:16px;">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudPagination Count="@TotalPages"
+                                       Selected="@CurrentPage"
+                                       SelectedChanged="OnPageChanged"
+                                       Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       ShowFirstButton="true"
+                                       ShowLastButton="true" />
+
+                        
+                    </MudStack>
+                </MudPaper>
+            }
         }
     }
 
@@ -120,6 +137,16 @@
 
 @code {
     private List<EntryModel> AllEntries = new();
+    private int CurrentPage = 1;
+    private int PageSize = 10;
+
+    private int TotalPages => (int)Math.Ceiling((double)AllEntries.Count / PageSize);
+
+    private List<EntryModel> PagedEntries =>
+        AllEntries
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
 
     protected override void OnInitialized()
     {
@@ -130,6 +157,12 @@
         AllEntries = EntryService.GetAllEntries(userId);
     }
 
+    private void OnPageChanged(int newPage)
+    {
+        CurrentPage = newPage;
+        StateHasChanged();
+    }
+
     private void OpenEntry(EntryModel entry)
     {
         Nav.NavigateTo("/entry");
@@ -138,9 +171,9 @@
     private async Task ShowEntryDetails(EntryModel entry)
     {
         var parameters = new DialogParameters<EntryDetailsDialog>
-    {
-        { x => x.Entry, entry }
-    };
+        {
+            { x => x.Entry, entry }
+        };
 
         var options = new DialogOptions
         {
@@ -151,7 +184,6 @@
 
         await DialogService.ShowAsync<EntryDetailsDialog>("Entry Details", parameters, options);
     }
-    
 
     private void DeleteEntry(int entryId)
     {
@@ -161,6 +193,16 @@
 
         var userId = AuthState.CurrentUserId.Value;
         AllEntries = EntryService.GetAllEntries(userId);
+
+        
+        if (CurrentPage > TotalPages && TotalPages > 0)
+        {
+            CurrentPage = TotalPages;
+        }
+        else if (AllEntries.Count == 0)
+        {
+            CurrentPage = 1;
+        }
 
         StateHasChanged();
     }
