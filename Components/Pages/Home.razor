@@ -5,6 +5,7 @@
 @using BhawanaPatra.Models
 @inject UserService UserService
 @inject BhawanaPatra.Service.EntryService EntryService
+@inject BhawanaPatra.Service.MoodAnalyticsService MoodAnalyticsService
 @inject NavigationManager Nav
 @inject AppThemeService ThemeService
 @inject AuthenticationStateService AuthState
@@ -34,7 +35,7 @@
     }
     else
     {
-       
+
         <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px;">
             <MudStack Spacing="2">
 
@@ -45,7 +46,7 @@
 
                     <MudStack Spacing="0">
                         <MudText Typo="Typo.h5" Style="font-weight:900;">
-                            Today’s Entry
+                            Today's Entry
                         </MudText>
                         <MudText Typo="Typo.body2" Color="Color.Inherit">
                             @DateTime.Now.ToString("dddd, MMMM dd, yyyy")
@@ -126,7 +127,7 @@
                                        Color="Color.Primary"
                                        Style="border-radius:14px; padding:12px 28px;"
                                        OnClick="@(()=>Nav.NavigateTo("/entry"))">
-                                Write Today’s Entry
+                                Write Today's Entry
                             </MudButton>
                         </MudStack>
                     </MudItem>
@@ -135,7 +136,6 @@
             </MudStack>
         </MudPaper>
 
-        <!-- MIDDLE ROW -->
         <MudGrid Spacing="3" Class="mt-4">
             <MudItem xs="12" md="6">
                 <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:280px;">
@@ -143,9 +143,33 @@
                         Mood Distribution
                     </MudText>
                     <MudDivider Class="my-3" />
-                    <MudText Typo="Typo.body2" Color="Color.Inherit">
-                        Mood analytics will appear here after Mood Tracking is implemented.
-                    </MudText>
+
+                    @if (MoodCategoryStats.Values.Sum() == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Inherit">
+                            No mood data yet. Start tracking your moods in entries.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudChart ChartType="ChartType.Pie"
+                                  InputData="@MoodChartData"
+                                  InputLabels="@MoodChartLabels"
+                                  Width="100%"
+                                  Height="250px" />
+
+                        <MudStack Spacing="1" Class="mt-3">
+                            <MudText Typo="Typo.caption">
+                                Positive: <strong>@MoodCategoryStats["Positive"]</strong> (@MoodPercentages["Positive"]%)
+                            </MudText>
+                            <MudText Typo="Typo.caption">
+                                Neutral: <strong>@MoodCategoryStats["Neutral"]</strong> (@MoodPercentages["Neutral"]%)
+                            </MudText>
+                            <MudText Typo="Typo.caption">
+                                Negative: <strong>@MoodCategoryStats["Negative"]</strong> (@MoodPercentages["Negative"]%)
+                            </MudText>
+                        </MudStack>
+                    }
                 </MudPaper>
             </MudItem>
 
@@ -175,15 +199,31 @@
                             Most productive day: <b>@MostProductiveDay</b>
                         </MudText>
 
-                        <MudText Typo="Typo.body2" Color="Color.Inherit">
-                            Most used tag: <b>@MostUsedTag</b>
-                        </MudText>
+                        @if (!string.IsNullOrEmpty(MostUsedTag) && MostUsedTag != "—")
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Inherit">
+                                Most used tag: <b>@MostUsedTag</b>
+                            </MudText>
+                        }
+
+                        @if (TopMoods.Count > 0)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Inherit" Class="mt-2">
+                                <strong>Most Frequent Moods:</strong>
+                            </MudText>
+                            @foreach (var mood in TopMoods.Take(3))
+                            {
+                                <MudText Typo="Typo.caption">
+                                    @mood.Key: <strong>@mood.Value</strong> times
+                                </MudText>
+                            }
+                        }
                     </MudStack>
                 </MudPaper>
             </MudItem>
         </MudGrid>
 
-        
+
         <MudPaper Outlined="true" Class="pa-6 mt-4" Style="border-radius:18px;">
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
                 <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
@@ -203,7 +243,7 @@
             @if (RecentEntries.Count == 0)
             {
                 <MudText Typo="Typo.body2" Color="Color.Inherit">
-                    No entries yet. Start by writing today’s entry.
+                    No entries yet. Start by writing today's entry.
                 </MudText>
             }
             else
@@ -263,6 +303,14 @@
 
     private List<EntryModel> RecentEntries = new();
 
+    private Dictionary<string, int> MoodCategoryStats = new();
+    private Dictionary<string, double> MoodPercentages = new();
+    private Dictionary<string, int> TopMoods = new();
+    private Dictionary<string, int> TopTags = new();
+
+    private double[] MoodChartData = Array.Empty<double>();
+    private string[] MoodChartLabels = Array.Empty<string>();
+
     protected override void OnInitialized()
     {
         if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
@@ -292,7 +340,21 @@
         if (best != null)
             MostProductiveDay = FormatDate(best.EntryDateKey);
 
-        MostUsedTag = "—";
+        MoodCategoryStats = MoodAnalyticsService.GetMoodCategoryStatistics(userId);
+        MoodPercentages = MoodAnalyticsService.GetMoodCategoryPercentages(userId);
+        TopMoods = MoodAnalyticsService.GetMoodFrequency(userId, 5);
+        TopTags = MoodAnalyticsService.GetTagFrequency(userId, 10);
+
+        if (TopTags.Count > 0)
+            MostUsedTag = TopTags.First().Key;
+
+        MoodChartData = new double[]
+        {
+            MoodCategoryStats["Positive"],
+            MoodCategoryStats["Neutral"],
+            MoodCategoryStats["Negative"]
+        };
+        MoodChartLabels = new string[] { "Positive", "Neutral", "Negative" };
     }
 
     private static string FormatDate(string dateKey)
