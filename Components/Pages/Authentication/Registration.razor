@@ -6,62 +6,57 @@
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
 
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column justify-center" Style="min-height:100vh;">
+    <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+        <MudStack Spacing="3">
 
-<MudForm >
-    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column justify-center" Style="min-height:100vh;">
-        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
-            <MudStack Spacing="3">
+            <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                <MudAvatar Size="Size.Large" Square="false" Style="height:88px; width:88px;">
+                    <img src="notes.png" alt="Logo" style="height:100%; width:100%; object-fit:contain;" />
+                </MudAvatar>
 
-                <MudStack AlignItems="AlignItems.Center" Spacing="1">
-                    <MudAvatar Size="Size.Large" Square="false" Style="height:88px; width:88px;">
-                        <img src="notes.png" alt="Logo" style="height:100%; width:100%; object-fit:contain;" />
-                    </MudAvatar>
+                <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:900;">
+                    bhawana patra
+                </MudText>
 
-                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:900;">
-                        bhawana patra
-                    </MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Inherit">
+                    Create your account to begin journaling
+                </MudText>
+            </MudStack>
 
-                    <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Inherit">
-                        Create your account to begin journaling
-                    </MudText>
-                </MudStack>
-                <MudForm Model="@model" OnValidSubmit="OnValidSubmit" @ref="form" @bind-IsValid="@Success" @bind-Errors="@Error">
-                <MudTextField T="String" Label="Username"
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudTextField T="string"
+                              Label="Username"
                               HelperText="3-8 characters"
                               @bind-Value="model.Username"
-                              For="@(() => model.Username)"
                               Variant="Variant.Outlined"
                               Margin="Margin.Dense"
                               Required="true"
-                              RequiredError="UserName is required"
+                              RequiredError="Username is required"
                               MaxLength="10"
-                              Counter="8"
-                                  />
+                              Counter="8" />
 
-                    <MudTextField T="string"
-                                  Label="Password"
-                                  HelperText="Min 8 chars, 1 uppercase, 1 lowercase, 1 digit"
-                                  @bind-Value="model.Password"
-                                  For="@(() => model.Password)"
-                                  InputType="InputType.Password"
-                                  Variant="Variant.Outlined"
-                                  Margin="Margin.Dense"
-                                  Required="true"
-                                  RequiredError="Password is required" />
+                <MudTextField T="string"
+                              Label="Password"
+                              HelperText="Min 8 chars, 1 uppercase, 1 lowercase, 1 digit"
+                              @bind-Value="model.Password"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Required="true"
+                              RequiredError="Password is required" />
 
-                    <MudTextField T="string"
-                                  Label="Confirm password"
-                                  HelperText="Repeat the password"
-                                  @bind-Value="model.Password2"
-                                  For="@(() => model.Password2)"
-                                  InputType="InputType.Password"
-                                  Variant="Variant.Outlined"
-                                  Margin="Margin.Dense"
-                                  Required="true"
-                                  RequiredError="Confirm password is required" />
+                <MudTextField T="string"
+                              Label="Confirm password"
+                              HelperText="Repeat the password"
+                              @bind-Value="model.Password2"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Required="true"
+                              RequiredError="Confirm password is required" />
 
-
-                <MudButton ButtonType="ButtonType.Submit"
+                <MudButton OnClick="OnValidSubmit"
                            Variant="Variant.Filled"
                            Color="Color.Primary"
                            FullWidth="true"
@@ -76,33 +71,31 @@
                         <text>Register</text>
                     }
                 </MudButton>
-                </MudForm>
-                <MudDivider />
+            </MudForm>
 
-                <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="1">
-                    <MudText Typo="Typo.body2" Color="Color.Inherit">
-                        Already have an account?
-                    </MudText>
+            <MudDivider />
 
-                    <MudLink Href="/login" Underline="Underline.Always">
-                        Click here
-                    </MudLink>
-                </MudStack>
-
-                <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Inherit">
-                    Copyright Bhawana Patra 2026
+            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="1">
+                <MudText Typo="Typo.body2" Color="Color.Inherit">
+                    Already have an account?
                 </MudText>
 
+                <MudLink Href="/login" Underline="Underline.Always">
+                    Click here
+                </MudLink>
             </MudStack>
-        </MudPaper>
-    </MudContainer>
-</MudForm>
+
+            <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Inherit">
+                Copyright Bhawana Patra 2026
+            </MudText>
+
+        </MudStack>
+    </MudPaper>
+</MudContainer>
 
 @code {
-    private MudForm ?form;
-    private bool Success;
-    private String[] Error= { };
-
+    private MudForm? form;
+    private bool success;
     private RegisterModel model = new();
     private bool isLoading = false;
 
@@ -111,26 +104,25 @@
         isLoading = true;
         StateHasChanged();
 
-        
         await Task.Delay(100);
 
-        var (success, errorMessage) = UserService.RegisterUser(
+        var (registerSuccess, errorMessage) = UserService.RegisterUser(
             model.Username,
             model.Password,
             model.Password2
         );
 
-        if (success)
+        if (registerSuccess)
         {
             Snackbar.Add("Registration successful! Please login.", Severity.Success);
-            Nav.NavigateTo("/login");
+            await Task.Delay(200);
+            Nav.NavigateTo("/login", forceLoad: true);
         }
         else
         {
+            isLoading = false;
+            StateHasChanged();
             Snackbar.Add(errorMessage, Severity.Error);
         }
-
-        isLoading = false;
-        StateHasChanged();
     }
 }

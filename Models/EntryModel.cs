@@ -32,6 +32,11 @@ namespace BhawanaPatra.Models
 
         [Column("secondary_moods")]
         public string? SecondaryMoods { get; set; }
+        [Column("tags")]
+        public string? Tags { get; set; }  
+
+        [Column("mood_category")]
+        public string? MoodCategory { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }

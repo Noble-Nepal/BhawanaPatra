@@ -1,5 +1,8 @@
 ﻿using BhawanaPatra.Database;
 using BhawanaPatra.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BhawanaPatra.Service
 {
@@ -27,8 +30,15 @@ namespace BhawanaPatra.Service
             return _db.GetEntryByDate(userId, TodayKey());
         }
 
-
-        public EntryModel SaveTodayEntry(int userId, string? title, string content)
+        
+        public EntryModel SaveTodayEntry(
+           int userId,
+           string? title,
+           string content,
+           string? primaryMood = null,
+           string? moodCategory = null,
+           List<string>? secondaryMoods = null,
+           string? tags = null)
         {
             var key = TodayKey();
             var existing = _db.GetEntryByDate(userId, key);
@@ -43,6 +53,12 @@ namespace BhawanaPatra.Service
                     Title = title,
                     Content = content,
                     WordCount = CountWords(content),
+                    PrimaryMood = primaryMood,
+                    MoodCategory = moodCategory,
+                    SecondaryMoods = secondaryMoods != null && secondaryMoods.Any()
+                        ? string.Join(",", secondaryMoods)
+                        : null,
+                    Tags = tags,
                     CreatedAt = now,
                     UpdatedAt = now
                 };
@@ -50,10 +66,15 @@ namespace BhawanaPatra.Service
                 _db.InsertEntry(entry);
                 return entry;
             }
-
             existing.Title = title;
             existing.Content = content;
             existing.WordCount = CountWords(content);
+            existing.PrimaryMood = primaryMood;
+            existing.MoodCategory = moodCategory;
+            existing.SecondaryMoods = secondaryMoods != null && secondaryMoods.Any()
+                ? string.Join(",", secondaryMoods)
+                : null;
+            existing.Tags = tags;
             existing.UpdatedAt = now;
 
             _db.UpdateEntry(existing);
@@ -66,8 +87,19 @@ namespace BhawanaPatra.Service
             if (entry != null)
                 _db.DeleteEntry(entry);
         }
+
+        public List<string> GetSecondaryMoodsList(EntryModel entry)
+        {
+            if (string.IsNullOrWhiteSpace(entry.SecondaryMoods))
+                return new List<string>();
+
+            return entry.SecondaryMoods.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(m => m.Trim())
+                                        .ToList();
+        }
+
         public List<EntryModel> GetRecentEntries(int userId, int take = 5)
-        => _db.GetEntriesByUser(userId).Take(take).ToList();
+            => _db.GetEntriesByUser(userId).Take(take).ToList();
 
         public int GetTotalEntries(int userId)
             => _db.GetEntriesByUser(userId).Count;
@@ -114,11 +146,10 @@ namespace BhawanaPatra.Service
 
             return best;
         }
+
         public List<EntryModel> GetAllEntries(int userId)
         {
             return _db.GetEntriesByUser(userId);
         }
-
-
     }
 }
