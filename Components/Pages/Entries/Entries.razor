@@ -5,6 +5,7 @@
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject NavigationManager Nav
 @inject AuthenticationStateService AuthState
+
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
 
     @if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
@@ -78,35 +79,28 @@
             <MudStack Spacing="2">
                 @foreach (var entry in AllEntries)
                 {
-                    <MudPaper Outlined="true" Class="pa-5" Style="border-radius:18px;">
-                        <MudStack Spacing="2">
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; cursor: pointer;" @onmousedown="@(() => OpenEntry(entry))">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
-                            <MudStack Row="true"
-                                      AlignItems="AlignItems.Center"
-                                      Justify="Justify.SpaceBetween"
-                                      Wrap="Wrap.Wrap">
-
-                                <MudText Typo="Typo.h6" Style="font-weight:900;">
-                                    @FormatDate(entry.EntryDateKey)
-                                </MudText>
+                            <MudStack Spacing="1" Style="flex-grow: 1;">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight:800;">
+                                        @FormatDate(entry.EntryDateKey)
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                        @entry.WordCount words
+                                    </MudText>
+                                </MudStack>
 
                                 <MudText Typo="Typo.body2" Color="Color.Inherit">
-                                    @entry.WordCount words
+                                    @(string.IsNullOrWhiteSpace(entry.Title) ? "Untitled entry" : entry.Title)
                                 </MudText>
                             </MudStack>
 
-                            <MudText Typo="Typo.h6" Style="font-weight:800;">
-                                @(string.IsNullOrWhiteSpace(entry.Title) ? "Untitled entry" : entry.Title)
-                            </MudText>
-
-                            <MudButton FullWidth="true"
-                                       Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Style="border-radius:14px; padding:12px 0;"
-                                       OnClick="@(()=>OpenEntry(entry))">
-                                OPEN
-                            </MudButton>
-
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => DeleteEntry(entry.EntryId))" />
                         </MudStack>
                     </MudPaper>
                 }
@@ -115,7 +109,6 @@
     }
 
 </MudContainer>
-
 
 @code {
     private List<EntryModel> AllEntries = new();
@@ -126,18 +119,26 @@
             return;
 
         var userId = AuthState.CurrentUserId.Value;
-
-       
         AllEntries = EntryService.GetAllEntries(userId);
     }
 
     private void OpenEntry(EntryModel entry)
     {
- 
         Nav.NavigateTo("/entry");
+    }
+
+    private void DeleteEntry(int entryId)
+    {
+        if (!AuthState.CurrentUserId.HasValue) return;
+
+        EntryService.DeleteEntry(entryId);
+
+        var userId = AuthState.CurrentUserId.Value;
+        AllEntries = EntryService.GetAllEntries(userId);
+
+        StateHasChanged();
     }
 
     private static string FormatDate(string dateKey)
         => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMM dd, yyyy") : dateKey;
 }
-

@@ -248,38 +248,39 @@
             }
             else
             {
-                <MudStack Spacing="2">
+                <MudStack Spacing="2" Class="overflow-auto">
                     @foreach (var entry in RecentEntries)
                     {
-                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px;">
-                            <MudStack Spacing="1">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
-                                    <MudText Typo="Typo.subtitle2" Style="font-weight:800;">
-                                        @FormatDate(entry.EntryDateKey)
-                                    </MudText>
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; cursor: pointer;">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
-                                    <MudText Typo="Typo.body2" Color="Color.Inherit">
-                                        @entry.WordCount words
-                                    </MudText>
+                                <MudStack Spacing="1" Style="flex-grow: 1;">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudText Typo="Typo.subtitle2" Style="font-weight:800;">
+                                            @FormatDate(entry.EntryDateKey)
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @entry.WordCount words
+                                        </MudText>
+                                    </MudStack>
+
+                                    @if (!string.IsNullOrWhiteSpace(entry.Title))
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Inherit">
+                                            @entry.Title
+                                        </MudText>
+                                    }
                                 </MudStack>
-
-                                @if (!string.IsNullOrWhiteSpace(entry.Title))
-                                {
-                                    <MudText Typo="Typo.body1" Style="font-weight:700;">
-                                        @entry.Title
-                                    </MudText>
-                                }
-
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           Style="border-radius:12px;"
-                                           OnClick="@(()=>Nav.NavigateTo("/entry"))">
-                                    Open
-                                </MudButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteEntry(entry.EntryId))" />
+                               
                             </MudStack>
                         </MudPaper>
                     }
                 </MudStack>
+
             }
         </MudPaper>
     }
@@ -359,4 +360,16 @@
 
     private static string FormatDate(string dateKey)
         => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMM d, yyyy") : dateKey;
+    private void DeleteEntry(int entryId)
+    {
+        if (!AuthState.CurrentUserId.HasValue) return;
+
+        EntryService.DeleteEntry(entryId);
+
+        var userId = AuthState.CurrentUserId.Value;
+        RecentEntries = EntryService.GetRecentEntries(userId, take: 7);
+        TotalEntries = EntryService.GetTotalEntries(userId);
+
+        StateHasChanged();
+    }
 }

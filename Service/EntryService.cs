@@ -87,6 +87,12 @@ namespace BhawanaPatra.Service
             if (entry != null)
                 _db.DeleteEntry(entry);
         }
+        public void DeleteEntry(int entryId)
+        {
+            var entry = _db.GetEntryById(entryId);
+            if (entry != null)
+                _db.DeleteEntry(entry);
+        }
 
         public List<string> GetSecondaryMoodsList(EntryModel entry)
         {

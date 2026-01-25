@@ -47,7 +47,10 @@ namespace BhawanaPatra.Database
         public void InsertEntry(EntryModel entry) => _db.Insert(entry);
         public void UpdateEntry(EntryModel entry) => _db.Update(entry);
         public void DeleteEntry(EntryModel entry) => _db.Delete(entry);
-
+        public EntryModel? GetEntryById(int entryId)
+        {
+            return _db.Table<EntryModel>().FirstOrDefault(e => e.EntryId == entryId);
+        }
 
     }
 
