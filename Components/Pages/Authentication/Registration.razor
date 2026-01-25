@@ -1,17 +1,13 @@
-﻿
-@page "/register"
+﻿@page "/register"
 @using BhawanaPatra.ViewModel
 @using MudBlazor
-@using BhawanaPatra.Components.Layout
-@inject UserService userService
-@using System.ComponentModel.DataAnnotations
+
+@inject UserService UserService
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
 
 
-
-
-<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator />
-
+<MudForm >
     <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column justify-center" Style="min-height:100vh;">
         <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
             <MudStack Spacing="3">
@@ -29,38 +25,58 @@
                         Create your account to begin journaling
                     </MudText>
                 </MudStack>
-
-                <MudTextField Label="First name"
-                              HelperText="Max. 8 characters"
+                <MudForm Model="@model" OnValidSubmit="OnValidSubmit" @ref="form" @bind-IsValid="@Success" @bind-Errors="@Error">
+                <MudTextField T="String" Label="Username"
+                              HelperText="3-8 characters"
                               @bind-Value="model.Username"
                               For="@(() => model.Username)"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense" />
+                              Margin="Margin.Dense"
+                              Required="true"
+                              RequiredError="UserName is required"
+                              MaxLength="10"
+                              Counter="8"
+                                  />
 
-                <MudTextField Label="Password"
-                              HelperText="Choose a strong password"
-                              @bind-Value="model.Password"
-                              For="@(() => model.Password)"
-                              InputType="InputType.Password"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense" />
+                    <MudTextField T="string"
+                                  Label="Password"
+                                  HelperText="Min 8 chars, 1 uppercase, 1 lowercase, 1 digit"
+                                  @bind-Value="model.Password"
+                                  For="@(() => model.Password)"
+                                  InputType="InputType.Password"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Required="true"
+                                  RequiredError="Password is required" />
 
-                <MudTextField Label="Confirm password"
-                              HelperText="Repeat the password"
-                              @bind-Value="model.Password2"
-                              For="@(() => model.Password2)"
-                              InputType="InputType.Password"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense" />
+                    <MudTextField T="string"
+                                  Label="Confirm password"
+                                  HelperText="Repeat the password"
+                                  @bind-Value="model.Password2"
+                                  For="@(() => model.Password2)"
+                                  InputType="InputType.Password"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Required="true"
+                                  RequiredError="Confirm password is required" />
+
 
                 <MudButton ButtonType="ButtonType.Submit"
                            Variant="Variant.Filled"
                            Color="Color.Primary"
                            FullWidth="true"
+                           Disabled="@isLoading"
                            Style="border-radius:12px; padding:12px 0;">
-                    Register
+                    @if (isLoading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        <text>Register</text>
+                    }
                 </MudButton>
-
+                </MudForm>
                 <MudDivider />
 
                 <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="1">
@@ -74,75 +90,47 @@
                 </MudStack>
 
                 <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Inherit">
-                    Copy Right Bhawana Patra 2026
+                    Copyright Bhawana Patra 2026
                 </MudText>
 
             </MudStack>
         </MudPaper>
     </MudContainer>
-</EditForm>
-
-
-
+</MudForm>
 
 @code {
+    private MudForm ?form;
+    private bool Success;
+    private String[] Error= { };
+
     private RegisterModel model = new();
-    private bool success;
+    private bool isLoading = false;
 
-    [Inject] private UserService UserService { get; set; } = default!;
-    [Inject] private ISnackbar Snackbar { get; set; } = default!;
-    [Inject] private NavigationManager Nav { get; set; } = default!;
-
-    
-    private void OnValidSubmit()
+    private async Task OnValidSubmit()
     {
-        if (!IsPasswordStrong(model.Password))
-        {
-            Snackbar.Add(" Password does not meet strength requirements.", Severity.Error);
-            success = false;
-            return;
-        }
+        isLoading = true;
+        StateHasChanged();
 
-        if (!PasswordsMatch(model.Password, model.Password2))
-        {
-            Snackbar.Add(" Passwords do not match.", Severity.Error);
-            success = false;
-            return;
-        }
+        
+        await Task.Delay(100);
 
-        var registered = UserService.RegisterUser(model.Username, model.Password);
+        var (success, errorMessage) = UserService.RegisterUser(
+            model.Username,
+            model.Password,
+            model.Password2
+        );
 
-        if (registered)
+        if (success)
         {
-            Snackbar.Add("Registration successful", Severity.Success);
-            success = true;
+            Snackbar.Add("Registration successful! Please login.", Severity.Success);
             Nav.NavigateTo("/login");
         }
         else
         {
-            Snackbar.Add(" Username already exists.", Severity.Error);
-            success = false;
+            Snackbar.Add(errorMessage, Severity.Error);
         }
-    }
 
-    // Checks password strength: min length, upper, lower, digit
-    private bool IsPasswordStrong(string pw)
-    {
-        if (string.IsNullOrWhiteSpace(pw)) return false;
-        if (pw.Length < 8) return false;
-        if (!System.Text.RegularExpressions.Regex.IsMatch(pw, @"[A-Z]")) return false;
-        if (!System.Text.RegularExpressions.Regex.IsMatch(pw, @"[a-z]")) return false;
-        if (!System.Text.RegularExpressions.Regex.IsMatch(pw, @"[0-9]")) return false;
-        return true;
-    }
-
-    
-    private bool PasswordsMatch(string pw1, string pw2)
-    {
-        return pw1 == pw2;
-    }
-    private void GoToLogin()
-    {
-        Nav.NavigateTo("/login");
+        isLoading = false;
+        StateHasChanged();
     }
 }

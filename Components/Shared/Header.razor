@@ -3,6 +3,7 @@
 @inject NavigationManager Nav
 @inject UserService Auth
 @inject AppThemeService ThemeService
+@inject AuthenticationStateService AuthState
 
 <MudPaper Elevation="1" Square="true" Class="pa-3">
     <MudStack Row="true"
@@ -78,7 +79,7 @@
 
     private void Logout()
     {
-        Auth.Logout();
+        AuthState.Logout();
         Nav.NavigateTo("/login");
     }
 }

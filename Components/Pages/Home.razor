@@ -1,18 +1,18 @@
 ﻿@page "/"
 @page "/home"
-@using BhawanaPatra.Service
+
 @using MudBlazor
 @using BhawanaPatra.Models
 @inject UserService UserService
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject NavigationManager Nav
 @inject AppThemeService ThemeService
-
+@inject AuthenticationStateService AuthState
 
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
 
-    @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+    @if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
     {
         <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
             <MudText Typo="Typo.h6" Style="font-weight:800;">
@@ -265,10 +265,10 @@
 
     protected override void OnInitialized()
     {
-        if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+        if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
             return;
 
-        var userId = UserService.CurrentUserId.Value;
+        var userId = AuthState.CurrentUserId.Value;
 
         TotalEntries = EntryService.GetTotalEntries(userId);
         WordsToday = EntryService.GetWordsToday(userId);

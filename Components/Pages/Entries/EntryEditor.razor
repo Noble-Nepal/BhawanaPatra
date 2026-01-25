@@ -8,9 +8,10 @@
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
+@inject AuthenticationStateService AuthState
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
-    @if (!UserService.IsLoggedIn || !UserService.CurrentUserId.HasValue)
+    @if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
     {
         <MudPaper Outlined="true" Class="pa-5" Style="border-radius:16px;">
             <MudText Typo="Typo.h6" Style="font-weight:800;">
@@ -149,7 +150,7 @@
 
     protected override void OnInitialized()
     {
-        if (!UserService.IsLoggedIn)
+        if (!AuthState.IsLoggedIn)
         {
             Nav.NavigateTo("/login");
             return;
@@ -179,9 +180,9 @@
 
     private async Task LoadTodayEntry()
     {
-        if (!UserService.CurrentUserId.HasValue) return;
+        if (!AuthState.CurrentUserId.HasValue) return;
 
-        TodayEntry = EntryService.GetTodayEntry(UserService.CurrentUserId.Value);
+        TodayEntry = EntryService.GetTodayEntry(AuthState.CurrentUserId.Value);
 
         if (TodayEntry != null)
         {
@@ -216,7 +217,7 @@
 
     private async Task CreateEntry()
     {
-        if (!UserService.CurrentUserId.HasValue) return;
+        if (!AuthState.CurrentUserId.HasValue) return;
 
         // Get content from Quill editor
         try
@@ -241,14 +242,14 @@
             return;
         }
 
-        TodayEntry = EntryService.SaveTodayEntry(UserService.CurrentUserId.Value, Title, Content);
+        TodayEntry = EntryService.SaveTodayEntry(AuthState.CurrentUserId.Value, Title, Content);
         Snackbar.Add("Entry saved.", Severity.Success);
         StateHasChanged();
     }
 
     private async Task UpdateEntry()
     {
-        if (!UserService.CurrentUserId.HasValue) return;
+        if (!AuthState.CurrentUserId.HasValue) return;
 
         // Get content from Quill editor
         try
@@ -267,14 +268,14 @@
             return;
         }
 
-        TodayEntry = EntryService.SaveTodayEntry(UserService.CurrentUserId.Value, Title, Content);
+        TodayEntry = EntryService.SaveTodayEntry(AuthState.CurrentUserId.Value, Title, Content);
         Snackbar.Add("Entry updated.", Severity.Success);
         StateHasChanged();
     }
 
     private async Task DeleteEntry()
     {
-        if (!UserService.CurrentUserId.HasValue) return;
+        if (!AuthState.CurrentUserId.HasValue) return;
 
         if (TodayEntry == null)
         {
@@ -282,7 +283,7 @@
             return;
         }
 
-        EntryService.DeleteTodayEntry(UserService.CurrentUserId.Value);
+        EntryService.DeleteTodayEntry(AuthState.CurrentUserId.Value);
 
         TodayEntry = null;
         Title = null;

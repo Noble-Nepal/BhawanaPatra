@@ -26,7 +26,7 @@ namespace BhawanaPatra
             builder.Services.AddSingleton<EntryService>();
             builder.Services.AddSingleton<AppThemeService>();
             builder.Services.AddScoped<QuilService>();
-
+            builder.Services.AddSingleton<AuthenticationStateService>();
 
             builder.Services.AddMauiBlazorWebView();
             
