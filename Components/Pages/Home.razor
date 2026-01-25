@@ -1,6 +1,7 @@
 ﻿@page "/"
 @page "/home"
 
+@using BhawanaPatra.Components.Pages.Entries
 @using MudBlazor
 @using BhawanaPatra.Models
 @inject UserService UserService
@@ -9,7 +10,7 @@
 @inject NavigationManager Nav
 @inject AppThemeService ThemeService
 @inject AuthenticationStateService AuthState
-
+@inject IDialogService DialogService
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
 
@@ -270,12 +271,18 @@
                                             @entry.Title
                                         </MudText>
                                     }
+
                                 </MudStack>
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Default"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => ShowEntryDetails(entry))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
                                                Size="Size.Small"
                                                OnClick="@(() => DeleteEntry(entry.EntryId))" />
-                               
+                                </MudStack>
                             </MudStack>
                         </MudPaper>
                     }
@@ -371,5 +378,21 @@
         TotalEntries = EntryService.GetTotalEntries(userId);
 
         StateHasChanged();
+    }
+    private async Task ShowEntryDetails(EntryModel entry)
+    {
+        var parameters = new DialogParameters<EntryDetailsDialog>
+    {
+        { x => x.Entry, entry }
+    };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        await DialogService.ShowAsync<EntryDetailsDialog>("Entry Details", parameters, options);
     }
 }

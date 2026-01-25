@@ -5,6 +5,7 @@
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject NavigationManager Nav
 @inject AuthenticationStateService AuthState
+@inject IDialogService DialogService
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
 
@@ -79,7 +80,7 @@
             <MudStack Spacing="2">
                 @foreach (var entry in AllEntries)
                 {
-                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; cursor: pointer;" @onmousedown="@(() => OpenEntry(entry))">
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px; cursor: pointer;" >
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
                             <MudStack Spacing="1" Style="flex-grow: 1;">
@@ -97,10 +98,17 @@
                                 </MudText>
                             </MudStack>
 
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteEntry(entry.EntryId))" />
+                            <MudStack Row="true" Spacing="1">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => ShowEntryDetails(entry))" />
+
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteEntry(entry.EntryId))" />
+                            </MudStack>
                         </MudStack>
                     </MudPaper>
                 }
@@ -126,6 +134,24 @@
     {
         Nav.NavigateTo("/entry");
     }
+
+    private async Task ShowEntryDetails(EntryModel entry)
+    {
+        var parameters = new DialogParameters<EntryDetailsDialog>
+    {
+        { x => x.Entry, entry }
+    };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        await DialogService.ShowAsync<EntryDetailsDialog>("Entry Details", parameters, options);
+    }
+    
 
     private void DeleteEntry(int entryId)
     {

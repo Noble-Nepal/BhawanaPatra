@@ -1,0 +1,87 @@
+﻿@using BhawanaPatra.Models
+@using BhawanaPatra.Service
+@using MudBlazor
+@inject EntryService EntryService
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.h6" Style="font-weight:800;">
+                    @(string.IsNullOrWhiteSpace(Entry.Title) ? "Untitled Entry" : Entry.Title)
+                </MudText>
+                <MudText Typo="Typo.caption" Color="Color.Inherit">
+                    @FormatDate(Entry.EntryDateKey)
+                </MudText>
+            </MudStack>
+
+            <MudDivider />
+
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2">Created: @Entry.CreatedAt.ToString("dd MMM yyyy, HH:mm")</MudText>
+                <MudText Typo="Typo.body2">Updated: @Entry.UpdatedAt.ToString("dd MMM yyyy, HH:mm")</MudText>
+                <MudText Typo="Typo.body2">Word count: @Entry.WordCount</MudText>
+
+                @if (!string.IsNullOrEmpty(Entry.PrimaryMood))
+                {
+                    <MudDivider Class="my-2" />
+                    <MudText Typo="Typo.body2"><strong>Primary Mood:</strong> (@Entry.MoodCategory)</MudText>
+                    <MudStack Row="true" Spacing="1">
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                            @Entry.PrimaryMood
+                        </MudChip>
+                    </MudStack>
+
+                    @if (!string.IsNullOrEmpty(Entry.SecondaryMoods))
+                    {
+                        <MudText Typo="Typo.body2" Class="mt-2"><strong>Secondary Moods:</strong></MudText>
+                        <MudStack Row="true" Spacing="1">
+                            @foreach (var mood in Entry.SecondaryMoods.Split(','))
+                            {
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@mood.Trim()</MudChip>
+                            }
+                        </MudStack>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Entry.Tags))
+                    {
+                        <MudText Typo="Typo.body2" Class="mt-2"><strong>Tags:</strong></MudText>
+                        <MudStack Row="true" Spacing="1">
+                            @foreach (var tag in Entry.Tags.Split(','))
+                            {
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@tag.Trim()</MudChip>
+                            }
+                        </MudStack>
+                    }
+                }
+            </MudStack>
+
+            <MudDivider />
+
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.subtitle2" Style="font-weight:800;">Content</MudText>
+                <MudPaper Outlined="true" Class="pa-3" Style="max-height: 300px; overflow-y: auto;">
+                    <div>@((MarkupString)Entry.Content)</div>
+                </MudPaper>
+            </MudStack>
+
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private  IDialogReference ?DialogRef { get; set; }
+
+    [Parameter]
+    public EntryModel Entry { get; set; }
+
+    private void Close() => DialogRef?.Close();
+
+    private static string FormatDate(string dateKey)
+        => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMMM dd, yyyy") : dateKey;
+}
