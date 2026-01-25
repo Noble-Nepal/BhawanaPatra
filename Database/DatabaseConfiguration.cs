@@ -25,7 +25,10 @@ namespace BhawanaPatra.Database
         {
             return _db.Table<UserModel>().FirstOrDefault(u => u.Username == username);
         }
-
+        public UserModel? GetUserById(int userId)
+        {
+            return _db.Table<UserModel>().FirstOrDefault(u => u.Id == userId);
+        }
         public void RegisterUser(UserModel user)
         {
             _db.Insert(user);
