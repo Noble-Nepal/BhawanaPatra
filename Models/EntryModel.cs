@@ -13,7 +13,6 @@ namespace BhawanaPatra.Models
         [Column("user_id")]
         public int UserId { get; set; }
 
-        
         [Indexed]
         [Column("entry_date_key")]
         public string EntryDateKey { get; set; } = string.Empty;
@@ -28,10 +27,17 @@ namespace BhawanaPatra.Models
         [Column("word_count")]
         public int WordCount { get; set; }
 
+        [Column("primary_mood")]
+        public string? PrimaryMood { get; set; }
+
+        [Column("secondary_moods")]
+        public string? SecondaryMoods { get; set; }
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
+
     }
 }
