@@ -103,5 +103,22 @@ namespace BhawanaPatra.Service
 
             return trends.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
+        public double GetAverageWordCount(int userId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var entries = _db.GetEntriesByUser(userId);
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                entries = entries.Where(e =>
+                {
+                    if (!DateTime.TryParse(e.EntryDateKey, out var entryDate)) return false;
+                    if (startDate.HasValue && entryDate < startDate.Value) return false;
+                    if (endDate.HasValue && entryDate > endDate.Value) return false;
+                    return true;
+                }).ToList();
+            }
+
+            return entries.Count > 0 ? Math.Round(entries.Average(e => e.WordCount), 1) : 0;
+        }
     }
 }
