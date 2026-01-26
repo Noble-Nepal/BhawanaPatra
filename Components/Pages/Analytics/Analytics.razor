@@ -1,5 +1,347 @@
 ﻿@page "/analytics"
+@using MudBlazor
+@using BhawanaPatra.Models
+@inject BhawanaPatra.Service.EntryService EntryService
+@inject BhawanaPatra.Service.MoodAnalyticsService MoodAnalyticsService
+@inject BhawanaPatra.Service.StreakAnalyticsService StreakAnalyticsService
+@inject NavigationManager Nav
+@inject AuthenticationStateService AuthState
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
+
+    @if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+    {
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+            <MudText Typo="Typo.h6" Style="font-weight:800;">
+                Authentication required
+            </MudText>
+
+            <MudText Typo="Typo.body2" Color="Color.Inherit" Class="mt-2">
+                Please login to view your analytics.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-4"
+                       Style="border-radius:12px;"
+                       OnClick="@(()=>Nav.NavigateTo("/login"))">
+                Go to login
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudStack Spacing="0" Class="mb-4">
+            <MudText Typo="Typo.h3" Style="font-weight:900;">
+                Analytics Dashboard
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Inherit">
+                Insights into your journaling patterns and emotional trends
+            </MudText>
+        </MudStack>
+
+        <!-- Streak Statistics -->
+        <MudPaper Outlined="true" Class="pa-6 mb-4" Style="border-radius:18px;">
+            <MudText Typo="Typo.subtitle1" Style="font-weight:800;" Class="mb-3">
+                Streak Analytics
+            </MudText>
+            <MudDivider Class="mb-4" />
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            Current Streak
+                        </MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight:900;" Color="Color.Primary">
+                            @CurrentStreak
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            consecutive days
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            Longest Streak
+                        </MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight:900;" Color="Color.Success">
+                            @LongestStreak
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            days all-time
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            Total Entries
+                        </MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight:900;" Color="Color.Info">
+                            @TotalEntries
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            journal entries
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Mood Analytics -->
+        <MudGrid Spacing="3">
+            <!-- Mood Category Distribution -->
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:400px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
+                        Mood Category Distribution
+                    </MudText>
+                    <MudDivider Class="my-3" />
+
+                    @if (MoodCategoryStats.Values.Sum() == 0)
+                    {
+                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:300px;">
+                            <MudIcon Icon="@Icons.Material.Filled.SentimentNeutral" Size="Size.Large" Color="Color.Default" />
+                            <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                                No mood data available yet.<br />Start tracking your moods in entries.
+                            </MudText>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudChart ChartType="ChartType.Pie"
+                                  InputData="@MoodChartData"
+                                  InputLabels="@MoodChartLabels"
+                                  Width="100%"
+                                  Height="280px" />
+
+                        <MudDivider Class="my-3" />
+
+                        <MudStack Spacing="2">
+                            <MudPaper Outlined="true" Class="pa-3" Style="border-radius:12px; border-left: 4px solid var(--mud-palette-success);">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2" Style="font-weight:700;">
+                                            Positive
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @MoodCategoryStats["Positive"] entries
+                                        </MudText>
+                                    </MudStack>
+                                    <MudText Typo="Typo.h6" Style="font-weight:900;" Color="Color.Success">
+                                        @MoodPercentages["Positive"]%
+                                    </MudText>
+                                </MudStack>
+                            </MudPaper>
+
+                            <MudPaper Outlined="true" Class="pa-3" Style="border-radius:12px; border-left: 4px solid var(--mud-palette-info);">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2" Style="font-weight:700;">
+                                            Neutral
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @MoodCategoryStats["Neutral"] entries
+                                        </MudText>
+                                    </MudStack>
+                                    <MudText Typo="Typo.h6" Style="font-weight:900;" Color="Color.Info">
+                                        @MoodPercentages["Neutral"]%
+                                    </MudText>
+                                </MudStack>
+                            </MudPaper>
+
+                            <MudPaper Outlined="true" Class="pa-3" Style="border-radius:12px; border-left: 4px solid var(--mud-palette-error);">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2" Style="font-weight:700;">
+                                            Negative
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @MoodCategoryStats["Negative"] entries
+                                        </MudText>
+                                    </MudStack>
+                                    <MudText Typo="Typo.h6" Style="font-weight:900;" Color="Color.Error">
+                                        @MoodPercentages["Negative"]%
+                                    </MudText>
+                                </MudStack>
+                            </MudPaper>
+                        </MudStack>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Most Frequent Moods -->
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:400px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
+                        Most Frequent Moods
+                    </MudText>
+                    <MudDivider Class="my-3" />
+
+                    @if (TopMoods.Count == 0)
+                    {
+                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:300px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Mood" Size="Size.Large" Color="Color.Inherit" />
+                            <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                                No mood data available yet.<br />Start tracking your moods.
+                            </MudText>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="2">
+                            @foreach (var mood in TopMoods.Take(10))
+                            {
+                                var percentage = TotalEntries > 0 ? Math.Round((mood.Value / (double)TotalEntries) * 100, 1) : 0;
+                                <MudPaper Outlined="true" Class="pa-3" Style="border-radius:12px;">
+                                    <MudStack Spacing="1">
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body1" Style="font-weight:700;">
+                                                @mood.Key
+                                            </MudText>
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                <MudText Typo="Typo.body2" Color="Color.Inherit">
+                                                    @mood.Value times
+                                                </MudText>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Inherit">
+                                                    @percentage%
+                                                </MudChip>
+                                            </MudStack>
+                                        </MudStack>
+                                        <MudProgressLinear Color="Color.Inherit" Value="@percentage" Size="Size.Small" />
+                                    </MudStack>
+                                </MudPaper>
+                            }
+                        </MudStack>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Top Tags with Bar Chart -->
+            <MudItem xs="12">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
+                        Most Used Tags
+                    </MudText>
+                    <MudDivider Class="my-3" />
+
+                    @if (TopTags.Count == 0)
+                    {
+                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:250px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Label" Size="Size.Large" Color="Color.Default" />
+                            <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                                No tags found. Start adding tags to your entries.
+                            </MudText>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudChart ChartType="ChartType.Bar"
+                                  ChartSeries="@TagChartSeries"
+                                  ChartOptions="@TagChartOptions"
+                                  XAxisLabels="@TagChartLabels"
+                                  Width="100%"
+                                  
+                                  Height="350px">
+                           
+                        </MudChart>
+
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        
+        <MudStack Row="true" Justify="Justify.Center" Spacing="2" Class="mt-4">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Default"
+                       Style="border-radius:12px;"
+                       OnClick="@(()=>Nav.NavigateTo("/entry"))">
+                Write  Entry
+            </MudButton>
+
+          
+        </MudStack>
+    }
+
+</MudContainer>
 
 @code {
+    private int CurrentStreak;
+    private int LongestStreak;
+    private int TotalEntries;
 
+    private Dictionary<string, int> MoodCategoryStats = new()
+    {
+        { "Positive", 0 },
+        { "Neutral", 0 },
+        { "Negative", 0 }
+    };
+
+    private Dictionary<string, double> MoodPercentages = new()
+    {
+        { "Positive", 0 },
+        { "Neutral", 0 },
+        { "Negative", 0 }
+    };
+
+    private Dictionary<string, int> TopMoods = new();
+    private Dictionary<string, int> TopTags = new();
+
+    private double[] MoodChartData = Array.Empty<double>();
+    private string[] MoodChartLabels = Array.Empty<string>();
+
+    private List<ChartSeries> TagChartSeries = new();
+    private string[] TagChartLabels = Array.Empty<string>();
+
+    protected override void OnInitialized()
+    {
+        if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+            return;
+
+        var userId = AuthState.CurrentUserId.Value;
+
+       
+        CurrentStreak = StreakAnalyticsService.GetCurrentStreak(userId);
+        LongestStreak = StreakAnalyticsService.GetLongestStreak(userId);
+        TotalEntries = EntryService.GetTotalEntries(userId);
+
+        MoodCategoryStats = MoodAnalyticsService.GetMoodCategoryStatistics(userId);
+        MoodPercentages = MoodAnalyticsService.GetMoodCategoryPercentages(userId);
+        TopMoods = MoodAnalyticsService.GetMoodFrequency(userId, 10);
+        TopTags = MoodAnalyticsService.GetTagFrequency(userId, 10);
+
+        
+        MoodChartData = new double[]
+        {
+            MoodCategoryStats["Positive"],
+            MoodCategoryStats["Neutral"],
+            MoodCategoryStats["Negative"]
+        };
+        MoodChartLabels = new string[] { "Positive", "Neutral", "Negative" };
+
+       
+        if (TopTags.Count > 0)
+        {
+            TagChartLabels = TopTags.Keys.ToArray();
+            var tagValues = TopTags.Values.Select(v => (double)v).ToArray();
+
+            TagChartSeries = new List<ChartSeries>
+    {
+        new ChartSeries
+        {
+            Name = "Usage Count",
+            Data = tagValues
+                    }
+    };
+        }
+    }
+    private ChartOptions TagChartOptions = new ChartOptions
+    {
+        ChartPalette = new[] { "#bf0000" }
+    };
 }
