@@ -30,7 +30,9 @@
                   Wrap="Wrap.Wrap"
                   AlignItems="AlignItems.Center"
                   Spacing="1">
-
+            <MudIconButton Icon="@Icons.Material.Filled.Search"
+                           Color="Color.Inherit"
+                           OnClick="SearchFilter" />
             <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(() => Go("/home"))">
                 home
             </MudButton>
@@ -81,5 +83,10 @@
     {
         AuthState.Logout();
         Nav.NavigateTo("/login");
+    }
+    private void SearchFilter()
+    {
+        
+        Nav.NavigateTo("/search");
     }
 }
