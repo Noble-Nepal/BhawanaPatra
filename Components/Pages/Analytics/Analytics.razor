@@ -25,8 +25,7 @@
                        Class="mt-4"
                        Style="border-radius:12px;"
                        OnClick="@(()=>Nav.NavigateTo("/login"))">
-                Go to login
-            </MudButton>
+                Go to login </MudButton>
         </MudPaper>
     }
     else
@@ -40,6 +39,47 @@
             </MudText>
         </MudStack>
 
+        <!-- Date Range Filter -->
+        
+        <MudPaper Outlined="true" Class="pa-4 mb-4" Style="border-radius:18px; position: relative; z-index: 1;">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap" Spacing="2">
+                <MudText Typo="Typo.subtitle2" Style="font-weight:700;">
+                    Filter by Date Range
+                </MudText>
+
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudDatePicker Label="Start Date"
+                                   @bind-Date="StartDate"
+                                   MaxDate="@DateTime.Today"
+                                   Variant="Variant.Outlined"
+                                   Editable="true"
+                                   Style="max-width:200px;"
+                                   PickerVariant="PickerVariant.Dialog" />
+
+                    <MudDatePicker Label="End Date"
+                                   @bind-Date="EndDate"
+                                   MaxDate="@DateTime.Today"
+                                   Variant="Variant.Outlined"
+                                   Editable="true"
+                                   Style="max-width:200px;"
+                                   PickerVariant="PickerVariant.Dialog" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Style="border-radius:12px;"
+                               OnClick="ApplyFilter">
+                        Apply Filter
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               Style="border-radius:12px;"
+                               OnClick="ClearFilter">
+                        Clear
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
         <!-- Streak Statistics -->
         <MudPaper Outlined="true" Class="pa-6 mb-4" Style="border-radius:18px;">
             <MudText Typo="Typo.subtitle1" Style="font-weight:800;" Class="mb-3">
@@ -48,7 +88,7 @@
             <MudDivider Class="mb-4" />
 
             <MudGrid Spacing="2">
-                <MudItem xs="12" sm="6" md="4">
+                <MudItem xs="12" sm="6" md="3">
                     <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
                         <MudText Typo="Typo.caption" Color="Color.Inherit">
                             Current Streak
@@ -62,7 +102,7 @@
                     </MudPaper>
                 </MudItem>
 
-                <MudItem xs="12" sm="6" md="4">
+                <MudItem xs="12" sm="6" md="3">
                     <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
                         <MudText Typo="Typo.caption" Color="Color.Inherit">
                             Longest Streak
@@ -76,7 +116,7 @@
                     </MudPaper>
                 </MudItem>
 
-                <MudItem xs="12" sm="6" md="4">
+                <MudItem xs="12" sm="6" md="3">
                     <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
                         <MudText Typo="Typo.caption" Color="Color.Inherit">
                             Total Entries
@@ -85,7 +125,21 @@
                             @TotalEntries
                         </MudText>
                         <MudText Typo="Typo.caption" Color="Color.Inherit">
-                            journal entries
+                            in selected range
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Outlined="true" Class="pa-4" Style="border-radius:14px;">
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            Missed Days
+                        </MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight:900;" Color="Color.Warning">
+                            @MissedDaysCount
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                            days without entry
                         </MudText>
                     </MudPaper>
                 </MudItem>
@@ -96,7 +150,7 @@
         <MudGrid Spacing="3">
             <!-- Mood Category Distribution -->
             <MudItem xs="12" md="6">
-                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:400px;">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:500px;">
                     <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
                         Mood Category Distribution
                     </MudText>
@@ -176,7 +230,7 @@
 
             <!-- Most Frequent Moods -->
             <MudItem xs="12" md="6">
-                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:400px;">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:500px;">
                     <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
                         Most Frequent Moods
                     </MudText>
@@ -193,6 +247,17 @@
                     }
                     else
                     {
+                        <MudPaper Outlined="true" Class="pa-4 mb-3" Style="border-radius:14px; background: var(--mud-palette-primary); color: white;">
+                            <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.caption" Style="opacity: 0.9;">
+                                    Most Frequent Mood
+                                </MudText>
+                                <MudText Typo="Typo.h5" Style="font-weight:900;">
+                                    @MostFrequentMood
+                                </MudText>
+                            </MudStack>
+                        </MudPaper>
+
                         <MudStack Spacing="2">
                             @foreach (var mood in TopMoods.Take(10))
                             {
@@ -222,8 +287,8 @@
             </MudItem>
 
             <!-- Top Tags with Bar Chart -->
-            <MudItem xs="12">
-                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px;">
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:400px;">
                     <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
                         Most Used Tags
                     </MudText>
@@ -231,7 +296,7 @@
 
                     @if (TopTags.Count == 0)
                     {
-                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:250px;">
+                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:300px;">
                             <MudIcon Icon="@Icons.Material.Filled.Label" Size="Size.Large" Color="Color.Default" />
                             <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
                                 No tags found. Start adding tags to your entries.
@@ -245,35 +310,115 @@
                                   ChartOptions="@TagChartOptions"
                                   XAxisLabels="@TagChartLabels"
                                   Width="100%"
-                                  
-                                  Height="350px">
-                           
+                                  Height="300px">
                         </MudChart>
-
                     }
                 </MudPaper>
             </MudItem>
+
+            <!-- Word Count Trends -->
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px; min-height:400px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
+                        Word Count Trends
+                    </MudText>
+                    <MudDivider Class="my-3" />
+
+                    @if (WordCountTrends.Count == 0)
+                    {
+                        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:300px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Color="Color.Default" />
+                            <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                                No word count data available.
+                            </MudText>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudPaper Outlined="true" Class="pa-3 mb-3" Style="border-radius:12px;">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.body2" Style="font-weight:700;">
+                                    Average Word Count
+                                </MudText>
+                                <MudText Typo="Typo.h6" Style="font-weight:900;" Color="Color.Info">
+                                    @AverageWordCount words
+                                </MudText>
+                            </MudStack>
+                        </MudPaper>
+
+                        <MudChart ChartType="ChartType.Line"
+                                  ChartSeries="@WordCountChartSeries"
+                                  XAxisLabels="@WordCountChartLabels"
+                                  Width="100%"
+                                  Height="250px">
+                        </MudChart>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Missed Days Section -->
+            @if (FilterStartDate.HasValue && FilterEndDate.HasValue && MissedDays.Count > 0)
+            {
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px;">
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
+                            Missed Days (@MissedDays.Count days)
+                        </MudText>
+                        <MudDivider Class="my-3" />
+
+                        <MudStack Spacing="2">
+                            @foreach (var missedDay in MissedDays.Take(10))
+                            {
+                                <MudPaper Outlined="true" Class="pa-3" Style="border-radius:12px;">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.EventBusy" Color="Color.Warning" />
+                                        <MudText Typo="Typo.body2">
+                                            @missedDay.ToString("dddd, MMMM dd, yyyy")
+                                        </MudText>
+                                    </MudStack>
+                                </MudPaper>
+                            }
+
+                            @if (MissedDays.Count > 10)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Inherit" Align="Align.Center">
+                                    ... and @(MissedDays.Count - 10) more
+                                </MudText>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+            }
         </MudGrid>
 
-        
         <MudStack Row="true" Justify="Justify.Center" Spacing="2" Class="mt-4">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Default"
                        Style="border-radius:12px;"
                        OnClick="@(()=>Nav.NavigateTo("/entry"))">
-                Write  Entry
+                Write Entry
             </MudButton>
-
-          
         </MudStack>
     }
 
 </MudContainer>
 
 @code {
+    private DateTime? StartDate = DateTime.Today.AddMonths(-1);
+    private DateTime? EndDate = DateTime.Today;
+
+    private DateTime? FilterStartDate;
+    private DateTime? FilterEndDate;
+
     private int CurrentStreak;
     private int LongestStreak;
     private int TotalEntries;
+    private int MissedDaysCount;
+
+    private string MostFrequentMood = "N/A";
+    private double AverageWordCount;
+
+    private List<DateTime> MissedDays = new();
 
     private Dictionary<string, int> MoodCategoryStats = new()
     {
@@ -291,6 +436,7 @@
 
     private Dictionary<string, int> TopMoods = new();
     private Dictionary<string, int> TopTags = new();
+    private Dictionary<string, double> WordCountTrends = new();
 
     private double[] MoodChartData = Array.Empty<double>();
     private string[] MoodChartLabels = Array.Empty<string>();
@@ -298,24 +444,57 @@
     private List<ChartSeries> TagChartSeries = new();
     private string[] TagChartLabels = Array.Empty<string>();
 
+    private List<ChartSeries> WordCountChartSeries = new();
+    private string[] WordCountChartLabels = Array.Empty<string>();
+
+    private ChartOptions TagChartOptions = new ChartOptions
+    {
+        ChartPalette = new[] { "#bf0000" }
+    };
+
     protected override void OnInitialized()
     {
         if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
             return;
 
-        var userId = AuthState.CurrentUserId.Value;
+        ApplyFilter();
+    }
 
-       
+    private void ApplyFilter()
+    {
+        if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+            return;
+
+        var userId = AuthState.CurrentUserId.Value;
+        FilterStartDate = StartDate;
+        FilterEndDate = EndDate;
+
+        // Streak Analytics (not filtered)
         CurrentStreak = StreakAnalyticsService.GetCurrentStreak(userId);
         LongestStreak = StreakAnalyticsService.GetLongestStreak(userId);
-        TotalEntries = EntryService.GetTotalEntries(userId);
 
-        MoodCategoryStats = MoodAnalyticsService.GetMoodCategoryStatistics(userId);
-        MoodPercentages = MoodAnalyticsService.GetMoodCategoryPercentages(userId);
-        TopMoods = MoodAnalyticsService.GetMoodFrequency(userId, 10);
-        TopTags = MoodAnalyticsService.GetTagFrequency(userId, 10);
+        // Filtered analytics
+        MoodCategoryStats = MoodAnalyticsService.GetMoodCategoryStatistics(userId, FilterStartDate, FilterEndDate);
+        MoodPercentages = MoodAnalyticsService.GetMoodCategoryPercentages(userId, FilterStartDate, FilterEndDate);
+        TopMoods = MoodAnalyticsService.GetMoodFrequency(userId, 10, FilterStartDate, FilterEndDate);
+        MostFrequentMood = MoodAnalyticsService.GetMostFrequentMood(userId, FilterStartDate, FilterEndDate);
+        TopTags = MoodAnalyticsService.GetTagFrequency(userId, 10, FilterStartDate, FilterEndDate);
 
-        
+        // Word count analytics - NOW FROM StreakAnalyticsService
+        WordCountTrends = StreakAnalyticsService.GetWordCountTrends(userId, FilterStartDate, FilterEndDate);
+        AverageWordCount = StreakAnalyticsService.GetAverageWordCount(userId, FilterStartDate, FilterEndDate);
+
+        // Calculate total entries in range
+        TotalEntries = MoodCategoryStats.Values.Sum();
+
+        // Calculate missed days
+        if (FilterStartDate.HasValue && FilterEndDate.HasValue)
+        {
+            MissedDays = StreakAnalyticsService.GetMissedDays(userId, FilterStartDate.Value, FilterEndDate.Value);
+            MissedDaysCount = MissedDays.Count;
+        }
+
+        // Prepare mood chart data
         MoodChartData = new double[]
         {
             MoodCategoryStats["Positive"],
@@ -324,24 +503,50 @@
         };
         MoodChartLabels = new string[] { "Positive", "Neutral", "Negative" };
 
-       
+        // Prepare tag chart data
         if (TopTags.Count > 0)
         {
             TagChartLabels = TopTags.Keys.ToArray();
             var tagValues = TopTags.Values.Select(v => (double)v).ToArray();
 
             TagChartSeries = new List<ChartSeries>
-    {
-        new ChartSeries
-        {
-            Name = "Usage Count",
-            Data = tagValues
-                    }
-    };
+            {
+                new ChartSeries
+                {
+                    Name = "Usage Count",
+                    Data = tagValues
+                }
+            };
         }
+
+        // Prepare word count chart data
+        if (WordCountTrends.Count > 0)
+        {
+            WordCountChartLabels = WordCountTrends.Keys
+                .Select(k => DateTime.Parse(k).ToString("MMM dd"))
+                .ToArray();
+
+            var wordCountValues = WordCountTrends.Values.ToArray();
+
+            WordCountChartSeries = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Word Count",
+                    Data = wordCountValues
+                }
+            };
+        }
+
+        StateHasChanged();
     }
-    private ChartOptions TagChartOptions = new ChartOptions
+
+    private void ClearFilter()
     {
-        ChartPalette = new[] { "#bf0000" }
-    };
+        StartDate = null;
+        EndDate = null;
+        FilterStartDate = null;
+        FilterEndDate = null;
+        ApplyFilter();
+    }
 }

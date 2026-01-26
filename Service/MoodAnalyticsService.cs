@@ -16,9 +16,21 @@ namespace BhawanaPatra.Service
             _db = db;
         }
 
-        public Dictionary<string, int> GetMoodCategoryStatistics(int userId)
+        public Dictionary<string, int> GetMoodCategoryStatistics(int userId, DateTime? startDate = null, DateTime? endDate = null)
         {
             var entries = _db.GetEntriesByUser(userId);
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                entries = entries.Where(e =>
+                {
+                    if (!DateTime.TryParse(e.EntryDateKey, out var entryDate)) return false;
+                    if (startDate.HasValue && entryDate < startDate.Value) return false;
+                    if (endDate.HasValue && entryDate > endDate.Value) return false;
+                    return true;
+                }).ToList();
+            }
+
             var stats = new Dictionary<string, int>
             {
                 { "Positive", 0 },
@@ -37,9 +49,9 @@ namespace BhawanaPatra.Service
             return stats;
         }
 
-        public Dictionary<string, double> GetMoodCategoryPercentages(int userId)
+        public Dictionary<string, double> GetMoodCategoryPercentages(int userId, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var stats = GetMoodCategoryStatistics(userId);
+            var stats = GetMoodCategoryStatistics(userId, startDate, endDate);
             var total = stats.Values.Sum();
 
             if (total == 0)
@@ -56,9 +68,21 @@ namespace BhawanaPatra.Service
             );
         }
 
-        public Dictionary<string, int> GetMoodFrequency(int userId, int topN = 10)
+        public Dictionary<string, int> GetMoodFrequency(int userId, int topN = 10, DateTime? startDate = null, DateTime? endDate = null)
         {
             var entries = _db.GetEntriesByUser(userId);
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                entries = entries.Where(e =>
+                {
+                    if (!DateTime.TryParse(e.EntryDateKey, out var entryDate)) return false;
+                    if (startDate.HasValue && entryDate < startDate.Value) return false;
+                    if (endDate.HasValue && entryDate > endDate.Value) return false;
+                    return true;
+                }).ToList();
+            }
+
             var moodCounts = new Dictionary<string, int>();
 
             foreach (var entry in entries)
@@ -90,9 +114,27 @@ namespace BhawanaPatra.Service
                             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
-        public Dictionary<string, int> GetTagFrequency(int userId, int topN = 10)
+        public string GetMostFrequentMood(int userId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var moods = GetMoodFrequency(userId, 1, startDate, endDate);
+            return moods.FirstOrDefault().Key ?? "N/A";
+        }
+
+        public Dictionary<string, int> GetTagFrequency(int userId, int topN = 10, DateTime? startDate = null, DateTime? endDate = null)
         {
             var entries = _db.GetEntriesByUser(userId);
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                entries = entries.Where(e =>
+                {
+                    if (!DateTime.TryParse(e.EntryDateKey, out var entryDate)) return false;
+                    if (startDate.HasValue && entryDate < startDate.Value) return false;
+                    if (endDate.HasValue && entryDate > endDate.Value) return false;
+                    return true;
+                }).ToList();
+            }
+
             var tagCounts = new Dictionary<string, int>();
 
             foreach (var entry in entries)

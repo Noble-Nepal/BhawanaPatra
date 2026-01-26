@@ -349,10 +349,10 @@
         if (best != null)
             MostProductiveDay = FormatDate(best.EntryDateKey);
 
-        MoodCategoryStats = MoodAnalyticsService.GetMoodCategoryStatistics(userId);
-        MoodPercentages = MoodAnalyticsService.GetMoodCategoryPercentages(userId);
-        TopMoods = MoodAnalyticsService.GetMoodFrequency(userId, 5);
-        TopTags = MoodAnalyticsService.GetTagFrequency(userId, 10);
+        MoodCategoryStats = MoodAnalyticsService.GetMoodCategoryStatistics(userId, null, null);
+        MoodPercentages = MoodAnalyticsService.GetMoodCategoryPercentages(userId, null, null);
+        TopMoods = MoodAnalyticsService.GetMoodFrequency(userId, 5, null, null);
+        TopTags = MoodAnalyticsService.GetTagFrequency(userId, 10, null, null);
 
         if (TopTags.Count > 0)
             MostUsedTag = TopTags.First().Key;
