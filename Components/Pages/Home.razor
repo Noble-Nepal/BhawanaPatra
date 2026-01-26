@@ -7,6 +7,7 @@
 @inject UserService UserService
 @inject BhawanaPatra.Service.EntryService EntryService
 @inject BhawanaPatra.Service.MoodAnalyticsService MoodAnalyticsService
+@inject BhawanaPatra.Service.StreakAnalyticsService StreakAnalyticsService
 @inject NavigationManager Nav
 @inject AppThemeService ThemeService
 @inject AuthenticationStateService AuthState
@@ -328,8 +329,8 @@
 
         TotalEntries = EntryService.GetTotalEntries(userId);
         WordsToday = EntryService.GetWordsToday(userId);
-        CurrentStreak = EntryService.GetCurrentStreak(userId);
-        LongestStreak = EntryService.GetLongestStreak(userId);
+        CurrentStreak = StreakAnalyticsService.GetCurrentStreak(userId);
+        LongestStreak = StreakAnalyticsService.GetLongestStreak(userId);
 
         RecentEntries = EntryService.GetRecentEntries(userId, take: 5);
 
