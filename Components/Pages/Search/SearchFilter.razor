@@ -1,5 +1,295 @@
 ﻿@page "/search"
+@using MudBlazor
+@using BhawanaPatra.Models
+@using BhawanaPatra.Components.Pages.Entries
+@inject BhawanaPatra.Service.EntryService EntryService
+@inject NavigationManager Nav
+@inject AuthenticationStateService AuthState
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-10">
+
+    @if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+    {
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+            <MudText Typo="Typo.h6" Style="font-weight:800;">
+                Authentication required
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Inherit" Class="mt-2">
+                Please login to search entries.
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-4"
+                       Style="border-radius:12px;"
+                       OnClick="@(()=>Nav.NavigateTo("/login"))">
+                Go to login
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudStack Spacing="0" Class="mb-4">
+            <MudText Typo="Typo.h3" Style="font-weight:900;">
+                Search Entries
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Inherit">
+                Find your journal entries
+            </MudText>
+        </MudStack>
+
+        <!-- Search & Filters -->
+        <MudPaper Outlined="true" Class="pa-6 mb-4" Style="border-radius:18px;">
+            <MudGrid Spacing="3">
+                <!-- Search Box -->
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="SearchText"
+                                  Label="Search"
+                                  Placeholder="Search by title or content..."
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Style="border-radius:12px;" />
+                </MudItem>
+
+                <!-- Date Filters -->
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Start Date"
+                                   @bind-Date="StartDate"
+                                   Variant="Variant.Outlined"
+                                   MaxDate="@DateTime.Today"
+                                   Clearable="true"
+                                   Style="border-radius:12px;" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="End Date"
+                                   @bind-Date="EndDate"
+                                   Variant="Variant.Outlined"
+                                   MaxDate="@DateTime.Today"
+                                   Clearable="true"
+                                   Style="border-radius:12px;" />
+                </MudItem>
+
+                <!-- Mood Filter -->
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="SelectedMood"
+                               Label="Filter by Mood"
+                               Variant="Variant.Outlined"
+                               Clearable="true"
+                               Style="border-radius:12px;">
+                        @foreach (var mood in AllMoods)
+                        {
+                            <MudSelectItem Value="@mood">@mood</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <!-- Tag Filter -->
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="SelectedTag"
+                               Label="Filter by Tag"
+                               Variant="Variant.Outlined"
+                               Clearable="true"
+                               Style="border-radius:12px;">
+                        @foreach (var tag in AllTags)
+                        {
+                            <MudSelectItem Value="@tag">@tag</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <!-- Buttons -->
+                <MudItem xs="12">
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Style="border-radius:12px;"
+                                   OnClick="Search">
+                            Search
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   Style="border-radius:12px;"
+                                   OnClick="Clear">
+                            Clear
+                        </MudButton>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Results -->
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:18px;">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                <MudText Typo="Typo.subtitle1" Style="font-weight:800;">
+                    Results
+                </MudText>
+                @if (HasSearched)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Inherit">
+                        Found @Results.Count entries
+                    </MudText>
+                }
+            </MudStack>
+            <MudDivider Class="mb-3" />
+
+            @if (!HasSearched)
+            {
+                <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:200px;">
+                    <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Large" Color="Color.Default" />
+                    <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                        Use the filters above to search
+                    </MudText>
+                </MudStack>
+            }
+            else if (Results.Count == 0)
+            {
+                <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:200px;">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Default" />
+                    <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                        No entries found
+                    </MudText>
+                </MudStack>
+            }
+            else
+            {
+                <MudStack Spacing="2">
+                    @foreach (var entry in Results)
+                    {
+                        <MudPaper Outlined="true" Class="pa-4" Style="border-radius:16px;">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                <MudStack Spacing="1" Style="flex-grow: 1;">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudText Typo="Typo.subtitle2" Style="font-weight:800;">
+                                            @FormatDate(entry.EntryDateKey)
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @entry.WordCount words
+                                        </MudText>
+                                    </MudStack>
+
+                                    @if (!string.IsNullOrWhiteSpace(entry.Title))
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Inherit">
+                                            @entry.Title
+                                        </MudText>
+                                    }
+
+
+                                    <MudStack Row="true" Spacing="1" Class="mt-2">
+                                        @if (!string.IsNullOrEmpty(entry.PrimaryMood))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" >
+                                                @entry.PrimaryMood
+                                            </MudChip>
+                                        }
+                                        @if (!string.IsNullOrEmpty(entry.Tags))
+                                        {
+                                            @foreach (var tag in entry.Tags.Split(','))
+                                            {
+                                                <MudChip T="string" Size="Size.Small" >
+                                                    @tag.Trim()
+                                                </MudChip>
+                                            }
+                                        }
+                                    </MudStack>
+                                </MudStack>
+
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Default"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => ViewEntry(entry))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteEntry(entry.EntryId))" />
+                                </MudStack>
+                            </MudStack>
+                        </MudPaper>
+                    }
+                </MudStack>
+            }
+        </MudPaper>
+    }
+
+</MudContainer>
 
 @code {
+    private string? SearchText;
+    private DateTime? StartDate;
+    private DateTime? EndDate;
+    private string? SelectedMood;
+    private string? SelectedTag;
 
+    private List<string> AllMoods = new();
+    private List<string> AllTags = new();
+    private List<EntryModel> Results = new();
+    private bool HasSearched = false;
+
+    protected override void OnInitialized()
+    {
+        if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+            return;
+
+        var userId = AuthState.CurrentUserId.Value;
+        AllMoods = EntryService.GetAllMoods(userId);
+        AllTags = EntryService.GetAllTags(userId);
+    }
+
+    private void Search()
+    {
+        if (!AuthState.CurrentUserId.HasValue)
+            return;
+
+        var userId = AuthState.CurrentUserId.Value;
+        Results = EntryService.SearchEntries(userId, SearchText, StartDate, EndDate, SelectedMood, SelectedTag);
+        HasSearched = true;
+    }
+
+    private void Clear()
+    {
+        SearchText = null;
+        StartDate = null;
+        EndDate = null;
+        SelectedMood = null;
+        SelectedTag = null;
+        Results.Clear();
+        HasSearched = false;
+    }
+
+    private static string FormatDate(string dateKey)
+        => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMM d, yyyy") : dateKey;
+
+    private static string GetPreview(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return "";
+        return content.Length > 100 ? content.Substring(0, 100) + "..." : content;
+    }
+
+    private void DeleteEntry(int entryId)
+    {
+        if (!AuthState.CurrentUserId.HasValue) return;
+
+        EntryService.DeleteEntry(entryId);
+        Search(); // Refresh
+    }
+
+    private async Task ViewEntry(EntryModel entry)
+    {
+        var parameters = new DialogParameters<EntryDetailsDialog>
+        {
+            { x => x.Entry, entry }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        await DialogService.ShowAsync<EntryDetailsDialog>("Entry Details", parameters, options);
+    }
 }

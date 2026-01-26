@@ -438,17 +438,27 @@
             return;
         }
 
-        var allTags = string.Join(",", SelectedTags);
+        
+        var entry = new EntryModel
+        {
+            UserId = AuthState.CurrentUserId.Value,
+            EntryDateKey = EntryService.TodayKey(),
+            Title = Title,
+            Content = Content,
+            WordCount = EntryService.CountWords(Content),
+            PrimaryMood = SelectedPrimaryMood,
+            MoodCategory = SelectedMoodCategory,
+            SecondaryMoods = SelectedSecondaryMoods != null && SelectedSecondaryMoods.Any()
+                ? string.Join(",", SelectedSecondaryMoods)
+                : null,
+            Tags = string.Join(",", SelectedTags),
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
+        };
 
-        TodayEntry = EntryService.SaveTodayEntry(
-            AuthState.CurrentUserId.Value,
-            Title,
-            Content,
-            SelectedPrimaryMood,
-            SelectedMoodCategory,
-            SelectedSecondaryMoods,
-            allTags
-        );
+        
+        EntryService.SaveEntry(entry);
+        TodayEntry = entry;
 
         Snackbar.Add("Entry saved with moods and tags!", Severity.Success);
         StateHasChanged();
@@ -473,17 +483,26 @@
             return;
         }
 
-        var allTags = string.Join(",", SelectedTags);
+        
+        var entry = new EntryModel
+        {
+            UserId = AuthState.CurrentUserId.Value,
+            EntryDateKey = EntryService.TodayKey(),
+            Title = Title,
+            Content = Content,
+            WordCount = EntryService.CountWords(Content),
+            PrimaryMood = SelectedPrimaryMood,
+            MoodCategory = SelectedMoodCategory,
+            SecondaryMoods = SelectedSecondaryMoods != null && SelectedSecondaryMoods.Any()
+                ? string.Join(",", SelectedSecondaryMoods)
+                : null,
+            Tags = string.Join(",", SelectedTags),
+            UpdatedAt = DateTime.Now
+        };
 
-        TodayEntry = EntryService.SaveTodayEntry(
-            AuthState.CurrentUserId.Value,
-            Title,
-            Content,
-            SelectedPrimaryMood,
-            SelectedMoodCategory,
-            SelectedSecondaryMoods,
-            allTags
-        );
+        
+        EntryService.SaveEntry(entry);
+        TodayEntry = entry;
 
         Snackbar.Add("Entry updated with moods and tags!", Severity.Success);
         StateHasChanged();
