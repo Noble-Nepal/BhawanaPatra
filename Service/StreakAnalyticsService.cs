@@ -54,5 +54,26 @@ namespace BhawanaPatra.Service
 
             return best;
         }
+        public List<DateTime> GetMissedDays(int userId, DateTime startDate, DateTime endDate)
+        {
+            var entries = _db.GetEntriesByUser(userId)
+                             .Select(e => e.EntryDateKey)
+                             .ToHashSet();
+
+            var missedDays = new List<DateTime>();
+            var currentDate = startDate;
+
+            while (currentDate <= endDate)
+            {
+                var key = currentDate.ToString("yyyy-MM-dd");
+                if (!entries.Contains(key))
+                {
+                    missedDays.Add(currentDate);
+                }
+                currentDate = currentDate.AddDays(1);
+            }
+
+            return missedDays;
+        }
     }
 }
