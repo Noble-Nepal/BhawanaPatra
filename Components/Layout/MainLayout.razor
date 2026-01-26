@@ -12,9 +12,12 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div style="min-height:100vh; background-color: var(--mud-palette-background); color: var(--mud-palette-text-primary);">
+<div style="min-height:100vh;display: flex; flex-direction: column; background-color: var(--mud-palette-background); color: var(--mud-palette-text-primary);">
     <Header />
-    @Body
+    <div style ="flex: 1; background-color: var(--mud-palette-background);">
+        @Body
+        </div>
+    
 </div>
 
 @code {
