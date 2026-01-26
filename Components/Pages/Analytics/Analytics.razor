@@ -388,14 +388,16 @@
                                 </MudText>
                             </MudStack>
                         </MudPaper>
-
+                        <MudStack row="false">
                         <MudChart ChartType="ChartType.Line"
                                   ChartSeries="@WordCountChartSeries"
                                   ChartOptions="@WordCountChartOptions"
                                   XAxisLabels="@WordCountChartLabels"
                                   Width="100%"
-                                  Height="250px">
+                                  Height="250px"
+                        >
                         </MudChart>
+                        </MudStack>
                     }
                 </MudPaper>
             </MudItem>
@@ -478,7 +480,9 @@
         XAxisLines = true,
         YAxisLines = true,
         MaxNumYAxisTicks = 10,
-        YAxisTicks = 25
+        YAxisTicks = 25,
+       
+
         
         
     };
@@ -554,28 +558,42 @@
 
         if (WordCountTrends.Count > 0)
         {
+            var allDates = WordCountTrends.Keys.ToList();
+            var allValues = WordCountTrends.Values.ToList();
 
-            WordCountChartLabels = WordCountTrends.Keys
-                .Select(k => DateTime.Parse(k).ToString("MMM dd"))
+            // Calculate how many labels to show 
+            int maxLabels = 10;
+            int totalDates = allDates.Count;
+            int skipCount = totalDates > maxLabels ? (int)Math.Ceiling((double)totalDates / maxLabels) : 1;
+
+            //  show evenly distributed dates
+            WordCountChartLabels = allDates
+                .Select((date, index) =>
+                {
+                    if (index % skipCount == 0 || index == totalDates - 1) 
+                    {
+                        return DateTime.Parse(date).ToString("MMM dd");
+                    }
+                    return "";
+                })
                 .ToArray();
 
-            var wordCountValues = WordCountTrends.Values.ToArray();
+            var wordCountValues = allValues.ToArray();
 
             WordCountChartSeries = new List<ChartSeries>
-            {
-                new ChartSeries
-                {
-                    Name = "Word Count",
-                    Data = wordCountValues
-                }
-            };
+    {
+        new ChartSeries
+        {
+            Name = "Word Count",
+            Data = wordCountValues
+        }
+    };
         }
         else
         {
             WordCountChartSeries = new List<ChartSeries>();
             WordCountChartLabels = Array.Empty<string>();
         }
-
         StateHasChanged();
     }
 
