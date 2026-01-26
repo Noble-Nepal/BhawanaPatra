@@ -29,7 +29,16 @@
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script src="js/Quill.js"></script>
-
+    <script>
+        window.downloadFile = function (fileName, base64Content) {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = 'data:application/pdf;base64,' + base64Content;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+    </script>
 </body>
 
 </html>

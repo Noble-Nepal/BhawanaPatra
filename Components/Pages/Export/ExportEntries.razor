@@ -1,5 +1,232 @@
 ﻿@page "/export"
+@using MudBlazor
+@using BhawanaPatra.Models
+@inject BhawanaPatra.Service.EntryService EntryService
+@inject BhawanaPatra.Service.ExportService ExportService
+@inject AuthenticationStateService AuthState
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-10">
+
+    @if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+    {
+        <MudPaper Outlined="true" Class="pa-6" Style="border-radius:16px;">
+            <MudText Typo="Typo.h6" Style="font-weight:800;">
+                Authentication required
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Inherit" Class="mt-2">
+                Please login to export entries.
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-4"
+                       Style="border-radius:12px;"
+                       OnClick="@(()=>Nav.NavigateTo("/login"))">
+                Go to login
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudStack Spacing="0" Class="mb-4">
+            <MudText Typo="Typo.h3" Style="font-weight:900;">
+                Export to PDF
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Inherit">
+                Export your journal entries as PDF
+            </MudText>
+        </MudStack>
+
+        <!-- Export Options -->
+        <MudPaper Outlined="true" Class="pa-6 mb-4" Style="border-radius:18px;">
+            <MudText Typo="Typo.subtitle2" Style="font-weight:700;" Class="mb-4">
+                Select Date Range
+            </MudText>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Start Date"
+                                   @bind-Date="StartDate"
+                                   Variant="Variant.Outlined"
+                                   MaxDate="@DateTime.Today"
+                                   Style="border-radius:12px;" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="End Date"
+                                   @bind-Date="EndDate"
+                                   Variant="Variant.Outlined"
+                                   MaxDate="@DateTime.Today"
+                                   Style="border-radius:12px;" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Style="border-radius:12px;"
+                               OnClick="LoadPreview"
+                               StartIcon="@Icons.Material.Filled.Search">
+                        Load Preview
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Preview Section -->
+        @if (HasLoaded)
+        {
+            <MudPaper Outlined="true" Class="pa-6 mb-4" Style="border-radius:18px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight:700;">
+                        Preview
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Inherit">
+                        @FilteredEntries.Count entries selected
+                    </MudText>
+                </MudStack>
+                <MudDivider Class="mb-3" />
+
+                @if (FilteredEntries.Count == 0)
+                {
+                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:150px;">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Large" Color="Color.Default" />
+                        <MudText Typo="Typo.body2" Color="Color.Inherit" Align="Align.Center">
+                            No entries found in the selected date range.
+                        </MudText>
+                    </MudStack>
+                }
+                else
+                {
+                    <MudStack Spacing="2" Style="max-height: 400px; overflow-y: auto;">
+                        @foreach (var entry in FilteredEntries)
+                        {
+                            <MudPaper Outlined="true" Class="pa-3" Style="border-radius:12px;">
+                                <MudStack Spacing="1">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudText Typo="Typo.body2" Style="font-weight:700;">
+                                            @FormatDate(entry.EntryDateKey)
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @entry.WordCount words
+                                        </MudText>
+                                    </MudStack>
+
+                                    @if (!string.IsNullOrWhiteSpace(entry.Title))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                            @entry.Title
+                                        </MudText>
+                                    }
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    </MudStack>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Style="border-radius:12px;"
+                               OnClick="ExportToPdf"
+                               Disabled="@IsExporting"
+                               StartIcon="@Icons.Material.Filled.PictureAsPdf">
+                        @if (IsExporting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            <span class="ml-2">Generating PDF...</span>
+                        }
+                        else
+                        {
+                            <span>Export to PDF</span>
+                        }
+                    </MudButton>
+                }
+            </MudPaper>
+        }
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   Style="border-radius:12px;"
+                   OnClick="@(()=>Nav.NavigateTo("/home"))">
+            Back to Home
+        </MudButton>
+    }
+
+</MudContainer>
 
 @code {
+    private DateTime? StartDate;
+    private DateTime? EndDate;
+    private List<EntryModel> FilteredEntries = new();
+    private bool HasLoaded = false;
+    private bool IsExporting = false;
 
+    protected override void OnInitialized()
+    {
+        if (!AuthState.IsLoggedIn || !AuthState.CurrentUserId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        // Default to last 30 days
+        EndDate = DateTime.Today;
+        StartDate = DateTime.Today.AddDays(-30);
+    }
+
+    private void LoadPreview()
+    {
+        if (!AuthState.CurrentUserId.HasValue) return;
+
+        var userId = AuthState.CurrentUserId.Value;
+        var allEntries = EntryService.GetAllEntries(userId);
+
+        FilteredEntries = allEntries.Where(e =>
+        {
+            if (!DateTime.TryParse(e.EntryDateKey, out var date)) return false;
+            if (StartDate.HasValue && date < StartDate.Value) return false;
+            if (EndDate.HasValue && date > EndDate.Value) return false;
+            return true;
+        }).OrderByDescending(e => e.EntryDateKey).ToList();
+
+        HasLoaded = true;
+        StateHasChanged();
+    }
+
+    private async Task ExportToPdf()
+    {
+        if (!AuthState.CurrentUserId.HasValue || FilteredEntries.Count == 0)
+            return;
+
+        IsExporting = true;
+        StateHasChanged();
+
+        try
+        {
+            var username = AuthState.CurrentUsername ?? "User";
+            var pdfBytes = ExportService.GeneratePdf(FilteredEntries, username);
+
+            var fileName = $"BhawanaPatra_Export_{DateTime.Now:yyyyMMdd}.pdf";
+
+            await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(pdfBytes));
+
+            Snackbar.Add($"PDF exported successfully! ({FilteredEntries.Count} entries)", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error exporting PDF: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            IsExporting = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string FormatDate(string dateKey)
+        => DateTime.TryParse(dateKey, out var dt) ? dt.ToString("MMM dd, yyyy") : dateKey;
 }

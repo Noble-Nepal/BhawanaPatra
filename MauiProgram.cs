@@ -29,6 +29,7 @@ namespace BhawanaPatra
             builder.Services.AddSingleton<AuthenticationStateService>();
             builder.Services.AddScoped<MoodAnalyticsService>();
             builder.Services.AddScoped<StreakAnalyticsService>();
+            builder.Services.AddScoped<ExportService>();
             builder.Services.AddMauiBlazorWebView();
             
 
