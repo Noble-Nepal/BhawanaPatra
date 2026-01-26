@@ -48,7 +48,9 @@
             <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="@(() => Go("/analytics"))">
                 analytics
             </MudButton>
-
+            <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf"
+                           Color="Color.Inherit"
+                           OnClick="Export" />
             <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
 
             <MudIconButton Icon="@(ThemeService.IsDarkMode? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)"
@@ -88,5 +90,10 @@
     {
         
         Nav.NavigateTo("/search");
+    }
+    private void Export()
+    {
+
+        Nav.NavigateTo("/export");
     }
 }
