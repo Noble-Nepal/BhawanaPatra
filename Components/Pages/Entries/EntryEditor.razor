@@ -55,7 +55,7 @@
                               Style="border-radius:8px; max-width: 100%;" />
                 </div>
 
-                <MudPaper Outlined="true" Class="pa-4" Style="border-radius:12px; background-color: #f9f9f9;">
+                <MudPaper Outlined="true" Class="pa-4" Color="Color.Default" Style="border-radius:12px;">
                     <MudText Typo="Typo.subtitle2" Style="font-weight:800;" Class="mb-3">
                         How are you feeling? <span style="color:red;">*</span>
                     </MudText>
@@ -67,7 +67,7 @@
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense"
                                Required="true">
-                        <MudSelectItem Value="@((string)null)" Disabled="true">Select Primary Mood</MudSelectItem>
+                        <MudSelectItem Value="@string.Empty" Disabled="true">Select Primary Mood</MudSelectItem>
 
                         <MudSelectItem Value="@("--- Positive ---")" Disabled="true">
                             <MudText Color="Color.Success" Style="font-weight:600;">Positive</MudText>
@@ -131,7 +131,7 @@
                     </MudSelect>
                 </MudPaper>
 
-                <MudPaper Outlined="true" Class="pa-4" Style="border-radius:12px; background-color: #f9f9f9;">
+                <MudPaper Outlined="true" Class="pa-4" Color="Color.Default" Style="border-radius:12px; ">
                     <MudText Typo="Typo.subtitle2" Style="font-weight:800;" Class="mb-3">
                         Tags (Optional)
                     </MudText>
@@ -158,7 +158,7 @@
                         {
                             <MudChip T="string"
                                      Text="@tag"
-                                     Color="@(SelectedTags.Contains(tag) ? Color.Primary : Color.Default)"
+                                     Color="@(SelectedTags.Contains(tag) ? Color.Inherit : Color.Default)"
                                      Variant="@(SelectedTags.Contains(tag) ? Variant.Filled : Variant.Outlined)"
                                      OnClick="@(() => ToggleTag(tag))">
                                 @tag
@@ -174,7 +174,7 @@
                             {
                                 <MudChip T="string"
                                          Text="@tag"
-                                         Color="Color.Secondary"
+                                         Color="Color.Surface"
                                          OnClose="@(() => RemoveCustomTag(tag))">
                                     @tag
                                 </MudChip>
@@ -193,13 +193,13 @@
                 <MudStack Row="true" Spacing="2">
                     @if (TodayEntry == null)
                     {
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="border-radius:12px;" OnClick="CreateEntry">
+                        <MudButton Variant="Variant.Filled" Color="Color.Default" Style="border-radius:12px;" OnClick="CreateEntry">
                             Save Entry
                         </MudButton>
                     }
                     else
                     {
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="border-radius:12px;" OnClick="UpdateEntry">
+                        <MudButton Variant="Variant.Filled" Color="Color.Default" Style="border-radius:12px;" OnClick="UpdateEntry">
                             Update Entry
                         </MudButton>
                     }
@@ -424,7 +424,7 @@
             return;
         }
 
-        if (string.IsNullOrEmpty(SelectedPrimaryMood))
+        if (string.IsNullOrEmpty(SelectedPrimaryMood) || SelectedPrimaryMood == string.Empty)
         {
             Snackbar.Add("Please select a primary mood.", Severity.Warning);
             return;

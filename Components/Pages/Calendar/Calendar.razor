@@ -133,7 +133,7 @@
 </MudContainer>
 
 @code {
-    private MudDatePicker _picker;
+    private MudDatePicker ?_picker;
     private DateTime? SelectedDate = DateTime.Today;
     private DateTime _maxDate = DateTime.Today;
 
@@ -185,7 +185,8 @@
     {
         SelectedDate = DateTime.Today;
         CurrentPage = 1;
-        return _picker.GoToDate(DateTime.Today);
+        if (_picker == null) return Task.CompletedTask;
+        return _picker.GoToDate(DateTime.Today!);
     }
 
     private void EditEntry(EntryModel entry)

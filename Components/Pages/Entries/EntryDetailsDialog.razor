@@ -1,5 +1,5 @@
 ﻿@using BhawanaPatra.Models
-@using BhawanaPatra.Service
+
 @using MudBlazor
 @inject EntryService EntryService
 
@@ -78,7 +78,7 @@
     private  IDialogReference ?DialogRef { get; set; }
 
     [Parameter]
-    public EntryModel Entry { get; set; }
+    public EntryModel Entry { get; set; } = new();
 
     private void Close() => DialogRef?.Close();
 
