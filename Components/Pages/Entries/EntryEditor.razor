@@ -203,7 +203,7 @@
                             Update Entry
                         </MudButton>
                     }
-                  
+
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="border-radius:12px;" OnClick="DeleteEntry" Disabled="@(TodayEntry == null)">
                         Delete Entry
                     </MudButton>
@@ -351,7 +351,6 @@
         }
 
         CustomTags.Add(trimmedTag);
-        SelectedTags.Add(trimmedTag);
         NewTag = string.Empty;
         Snackbar.Add($"Tag '{trimmedTag}' added!", Severity.Success);
         StateHasChanged();
@@ -360,7 +359,6 @@
     private void RemoveCustomTag(string tag)
     {
         CustomTags.Remove(tag);
-        SelectedTags.Remove(tag);
         StateHasChanged();
     }
 
@@ -392,7 +390,7 @@
             if (!string.IsNullOrEmpty(TodayEntry.Tags))
             {
                 var allTags = TodayEntry.Tags.Split(',').Select(t => t.Trim()).ToList();
-                SelectedTags = allTags;
+                SelectedTags = allTags.Where(t => PredefinedTags.Contains(t)).ToList();
                 CustomTags = allTags.Where(t => !PredefinedTags.Contains(t)).ToList();
             }
 
@@ -438,7 +436,9 @@
             return;
         }
 
-        
+        // Combine SelectedTags and CustomTags
+        var allTags = SelectedTags.Concat(CustomTags).Distinct().ToList();
+
         var entry = new EntryModel
         {
             UserId = AuthState.CurrentUserId.Value,
@@ -451,12 +451,11 @@
             SecondaryMoods = SelectedSecondaryMoods != null && SelectedSecondaryMoods.Any()
                 ? string.Join(",", SelectedSecondaryMoods)
                 : null,
-            Tags = string.Join(",", SelectedTags),
+            Tags = allTags.Any() ? string.Join(",", allTags) : null,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now
         };
 
-        
         EntryService.SaveEntry(entry);
         TodayEntry = entry;
 
@@ -483,7 +482,9 @@
             return;
         }
 
-        
+        // Combine SelectedTags and CustomTags
+        var allTags = SelectedTags.Concat(CustomTags).Distinct().ToList();
+
         var entry = new EntryModel
         {
             UserId = AuthState.CurrentUserId.Value,
@@ -496,11 +497,10 @@
             SecondaryMoods = SelectedSecondaryMoods != null && SelectedSecondaryMoods.Any()
                 ? string.Join(",", SelectedSecondaryMoods)
                 : null,
-            Tags = string.Join(",", SelectedTags),
+            Tags = allTags.Any() ? string.Join(",", allTags) : null,
             UpdatedAt = DateTime.Now
         };
 
-        
         EntryService.SaveEntry(entry);
         TodayEntry = entry;
 
