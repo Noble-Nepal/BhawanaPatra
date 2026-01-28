@@ -94,9 +94,10 @@
         if (loginSuccess && user != null)
         {
             AuthState.Login(user);
+            
+            await Task.Delay(700);
+            Nav.NavigateTo("/home");
             Snackbar.Add("Login successful!", Severity.Success);
-            await Task.Delay(100);
-            Nav.NavigateTo("/home", forceLoad: true);
         }
         else
         {

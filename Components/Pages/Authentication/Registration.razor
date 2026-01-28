@@ -114,9 +114,11 @@
 
         if (registerSuccess)
         {
+            await Task.Delay(400);
+            
+           
+            Nav.NavigateTo("/login");
             Snackbar.Add("Registration successful! Please login.", Severity.Success);
-            await Task.Delay(200);
-            Nav.NavigateTo("/login", forceLoad: true);
         }
         else
         {
